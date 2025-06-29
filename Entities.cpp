@@ -1,11 +1,13 @@
-#pragma once
+module;
 
 #include <string>
 #include <iomanip>
 #include <sstream>
+#include <vector>
 
-// 用户类
-class User {
+export module Entities;
+
+export class  User {
 public:
     int userId;
     std::string username;
@@ -49,7 +51,7 @@ public:
 
 
 // 电影类
-class Movie {
+export class Movie {
 public:
     int movieId = 0;
     std::string title;
@@ -81,7 +83,7 @@ public:
           language(language), country(country), synopsis(synopsis),
           poster(poster), rating(rating), status(status) {}
 
-    std::string getStatusDescription() const {
+    std::string getStatus() const {
         switch (status) {
             case Status::onShow: return "在映";
             case Status::offShow: return "下架";
@@ -92,7 +94,7 @@ public:
 };
 
 // 影院类
-class Cinema {
+export class Cinema {
 public:
     int cinemaId = 0;
     std::string cinemaName;
@@ -111,7 +113,7 @@ public:
         : cinemaId(cinemaId), cinemaName(cinemaName), address(address),
           phone(phone), introduction(introduction), status(status) {}
 
-    std::string getStatusDescription() const {
+    std::string getStatus() const {
         switch(status) {
             case Status::open: return "营业";
             case Status::close: return "停业";
@@ -121,7 +123,7 @@ public:
 };
 
 //影厅类
-class Hall {
+export class Hall {
 public:
     int hallId = 0;
     int cinemaId = 0;
@@ -140,7 +142,7 @@ public:
         : hallId(hallId), cinemaId(cinemaId), hallName(hallName),
           seatCount(seatCount), hallType(hallType), status(status) {}
 
-    std::string getStatusDescription() const {
+    std::string getStatus() const {
         switch(status) {
             case Status::normal: return "正常";
             case Status::maintenance: return "维护";
@@ -150,7 +152,7 @@ public:
 };
 
 // 排片类
-class Screening {
+export class Screening {
 public:
     int screeningId = 0;
     int movieId = 0;
@@ -179,7 +181,7 @@ public:
           startTime(startTime), endTime(endTime), price(price),
           languageVersion(languageVersion), status(status) {}
 
-    std::string getStatusDescription() const {
+    std::string getStatus() const {
         switch(status) {
             case Status::normal: return "正常";
             case Status::cancle: return "取消";
@@ -190,7 +192,7 @@ public:
 
 
 // 座位类
-class Seat {
+export class Seat {
 public:
     int seatId = 0;
     int hallId = 0;
@@ -226,7 +228,7 @@ public:
         }
     }
 
-    std::string getStatusDescription() const {
+    std::string getStatus() const {
         switch (status) {
             case Status::normal: return "正常";
             case Status::maintenance: return "维护";
@@ -236,7 +238,7 @@ public:
 };
 
 // 排片座位类
-class ScreeningSeat {
+export class ScreeningSeat {
 public:
     int screeningSeatId = 0;
     int screeningId = 0;
@@ -262,7 +264,7 @@ public:
             seatId(seatId),status(status), lockTime(lockTime),
             lockUserId(lockUserId) {}
 
-    std::string getStatusDescription() const {
+    std::string getStatus() const {
         switch (status) {
             case Status::avilable: return "可用";
             case Status::sold: return "已售";
@@ -278,7 +280,7 @@ public:
 };
 
 // 订单类
-class Order {
+export class Order {
 public:
     int orderId = 0;
     std::string orderNo;

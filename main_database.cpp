@@ -1,9 +1,11 @@
-#include "Database.h"
+import Database;
+
 #include <iostream>
+#include <cppconn/resultset.h>
 
 int main() {
     // 创建数据库连接
-    Database db("tcp://localhost:3306", "root", "123456wyf", "");
+    Database db("tcp://localhost:3306", "root", "12345678", "");
 
     // 连接数据库
     if (db.connect()) {
