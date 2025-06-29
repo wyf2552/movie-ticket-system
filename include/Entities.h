@@ -1,3 +1,5 @@
+#pragma once
+
 #include <string>
 #include <iomanip>
 #include <sstream>
@@ -17,7 +19,6 @@ public:
     int userStatus;
     int userType;
 
-    // 构造函数
     User() : userId(0), userStatus(1), userType(0) {}
 
     User(int userId, const std::string& username, const std::string& password,
@@ -46,11 +47,7 @@ public:
     bool isAdmin() const { return userType == 1; }
 };
 
-enum class Status {
-    onShow,
-    offShow,
-    upComing
-};
+
 // 电影类
 class Movie {
 public:
@@ -66,9 +63,12 @@ public:
     std::string synopsis;
     std::string poster;
     double rating = 0.0;
-    Status status = Status::onShow;
+    enum class Status {
+        onShow,
+        offShow,
+        upComing
+    } status;
 
-    // 构造函数
     Movie() = default;
 
     Movie(int movieId, const std::string& title, const std::string& director,
@@ -81,13 +81,256 @@ public:
           language(language), country(country), synopsis(synopsis),
           poster(poster), rating(rating), status(status) {}
 
-
-    // 获取状态描述
     std::string getStatusDescription() const {
         switch (status) {
             case Status::onShow: return "在映";
             case Status::offShow: return "下架";
             case Status::upComing: return "即将上映";
+            default: return "未知";
+        }
+    }
+};
+
+// 影院类
+class Cinema {
+public:
+    int cinemaId = 0;
+    std::string cinemaName;
+    std::string address;
+    std::string phone;
+    std::string introduction;
+    enum class Status{
+        open,
+        close
+    } status;
+
+    Cinema() = default;
+
+    Cinema(int cinemaId, const std::string& cinemaName, const std::string& address,
+           const std::string& phone, const std::string& introduction, Status status)
+        : cinemaId(cinemaId), cinemaName(cinemaName), address(address),
+          phone(phone), introduction(introduction), status(status) {}
+
+    std::string getStatusDescription() const {
+        switch(status) {
+            case Status::open: return "营业";
+            case Status::close: return "停业";
+            default: return "未知";
+        }
+    }
+};
+
+//影厅类
+class Hall {
+public:
+    int hallId = 0;
+    int cinemaId = 0;
+    std::string hallName;
+    int seatCount = 0;
+    std::string hallType; // 普通, IMAX, 3D等
+    enum class Status {
+        normal,
+        maintenance
+    } status;
+
+    Hall() =default;
+
+    Hall(int hallId, int cinemaId, const std::string& hallName,
+         int seatCount, const std::string& hallType, Status status)
+        : hallId(hallId), cinemaId(cinemaId), hallName(hallName),
+          seatCount(seatCount), hallType(hallType), status(status) {}
+
+    std::string getStatusDescription() const {
+        switch(status) {
+            case Status::normal: return "正常";
+            case Status::maintenance: return "维护";
+            default: return "未知";
+        }
+    }
+};
+
+// 排片类
+class Screening {
+public:
+    int screeningId = 0;
+    int movieId = 0;
+    int cinemaId = 0;
+    int hallId = 0;
+    std::string startTime;
+    std::string endTime;
+    double price = 0.0;
+    std::string languageVersion;
+    enum class Status {
+        normal,
+        cancle
+    } status;
+
+    // 关联信息
+    std::string movieTitle;
+    std::string cinemaName;
+    std::string hallName;
+
+    Screening() = default;
+
+    Screening(int screeningId, int movieId, int cinemaId, int hallId,
+              const std::string& startTime, const std::string& endTime,
+              double price, const std::string& languageVersion, Status status)
+        : screeningId(screeningId), movieId(movieId), cinemaId(cinemaId), hallId(hallId),
+          startTime(startTime), endTime(endTime), price(price),
+          languageVersion(languageVersion), status(status) {}
+
+    std::string getStatusDescription() const {
+        switch(status) {
+            case Status::normal: return "正常";
+            case Status::cancle: return "取消";
+            default: return "未知";
+        }
+    }
+};
+
+
+// 座位类
+class Seat {
+public:
+    int seatId = 0;
+    int hallId = 0;
+    int rowNum = 0;
+    int columnNum = 0;
+    enum class SeatType {
+        normal,
+        couple,
+        VIP
+    } seatType;
+    enum class Status {
+        normal,
+        maintenance
+    } status;
+
+    Seat() = default;
+
+    Seat(int seatId, int hallId, int rowNum, int columnNum, SeatType seatType, Status status)
+        : seatId(seatId), hallId(hallId), rowNum(rowNum), columnNum(columnNum),
+          seatType(seatType), status(status) {}
+
+    // 获取座位位置描述
+    std::string getPositionDescription() const {
+        return std::to_string(rowNum) + "排" + std::to_string(columnNum) + "座";
+    }
+
+    std::string getTypeDescription() const {
+        switch (seatType) {
+            case SeatType::normal: return "普通座位";
+            case SeatType::couple: return "情侣座位";
+            case SeatType::VIP: return "VIP座位";
+            default: return "未知";
+        }
+    }
+
+    std::string getStatusDescription() const {
+        switch (status) {
+            case Status::normal: return "正常";
+            case Status::maintenance: return "维护";
+            default: return "未知";
+        }
+    }
+};
+
+// 排片座位类
+class ScreeningSeat {
+public:
+    int screeningSeatId = 0;
+    int screeningId = 0;
+    int seatId = 0;
+    enum class Status {
+        avilable,
+        sold,
+        lock
+    } status;
+
+    std::string lockTime;
+    int lockUserId = 0;
+
+    // 关联信息
+    int rowNum = 0;
+    int columnNum = 0;
+
+    ScreeningSeat()  = default;
+
+    ScreeningSeat(int screeningSeatId, int screeningId, int seatId,
+        Status status,const std::string& lockTime, int lockUserId)
+        : screeningSeatId(screeningSeatId), screeningId(screeningId),
+            seatId(seatId),status(status), lockTime(lockTime),
+            lockUserId(lockUserId) {}
+
+    std::string getStatusDescription() const {
+        switch (status) {
+            case Status::avilable: return "可用";
+            case Status::sold: return "已售";
+            case Status::lock: return "锁定";
+            default: return "未知";
+        }
+    }
+
+    // 获取座位位置描述
+    std::string getPositionDescription() const {
+        return std::to_string(rowNum) + "排" + std::to_string(columnNum) + "座";
+    }
+};
+
+// 订单类
+class Order {
+public:
+    int orderId = 0;
+    std::string orderNo;
+    int userId = 0;
+    int screeningId = 0;
+    double totalAmount = 0.0;
+    std::string createTime;
+    std::string payTime;
+    enum class PayMethod {
+        alipay,
+        wechat,
+        bank
+    } payMethod;
+    enum class Status {
+        nopaid,
+        paid,
+        cancle,
+        complete
+    } status;
+
+    // 关联信息
+    std::string username;
+    std::string movieTitle;
+    std::string cinemaName;
+    std::string hallName;
+    std::string startTime;
+    std::vector<std::string> seatPositions;
+
+    Order() = default;
+
+    Order(int orderId, const std::string& orderNo, int userId, int screeningId,
+          double totalAmount, const std::string& createTime, const std::string& payTime,
+          PayMethod PayMethod, Status status)
+        : orderId(orderId), orderNo(orderNo), userId(userId), screeningId(screeningId),
+          totalAmount(totalAmount), createTime(createTime), payTime(payTime),
+          payMethod(PayMethod), status(status) {}
+
+    std::string getPayMethodDescription() const {
+        switch (payMethod) {
+            case PayMethod::alipay: return "支付宝";
+            case PayMethod::wechat: return "微信";
+            case PayMethod::bank: return "银行卡";
+            default: return "未支付";
+        }
+    }
+
+    std::string getOrderStatusDescription() const {
+        switch (status) {
+            case Status::nopaid: return "待支付";
+            case Status::paid: return "已支付";
+            case Status::cancle: return "已取消";
+            case Status::complete: return "已完成";
             default: return "未知";
         }
     }
