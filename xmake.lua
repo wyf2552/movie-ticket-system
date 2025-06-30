@@ -1,5 +1,5 @@
 -- Define common configuration for both targets
-local mysql_path = "/usr/local/mysql-connector-c++-9.0.0"
+local mysql_path = "/usr/local/mysql-connector-c++-8.4.0/"
 local mysql_include = path.join(mysql_path, "include/jdbc")
 local mysql_libdir = path.join(mysql_path, "lib64")
 
@@ -33,3 +33,14 @@ target("database")
         "Database.cxx",
         "test/Database.cxx"
     )
+
+-- Target: UserService
+target("userservice")
+    set_kind("binary")
+    add_files(
+        "Database.cxx",
+        "Entities.cxx",
+        "UserService.cxx",
+        "test/UserService.cxx"
+    )
+

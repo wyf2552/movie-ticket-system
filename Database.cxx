@@ -12,7 +12,7 @@ module;
 #include <cppconn/statement.h>
 #include <cppconn/exception.h>
 
-export module Database;
+export module database;
 
 export class Database {
 private:

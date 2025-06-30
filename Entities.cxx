@@ -5,7 +5,7 @@ module;
 #include <sstream>
 #include <vector>
 
-export module Entities;
+export module entities;
 
 export class User {
 public:
