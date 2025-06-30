@@ -7,7 +7,7 @@ module;
 
 export module Entities;
 
-export class  User {
+export class User {
 public:
     int userId;
     std::string username;
@@ -215,11 +215,11 @@ public:
           seatType(seatType), status(status) {}
 
     // 获取座位位置描述
-    std::string getPositionDescription() const {
+    std::string getPositionStr() const {
         return std::to_string(rowNum) + "排" + std::to_string(columnNum) + "座";
     }
 
-    std::string getTypeDescription() const {
+    std::string getTypeStr() const {
         switch (seatType) {
             case SeatType::normal: return "普通座位";
             case SeatType::couple: return "情侣座位";
@@ -273,13 +273,11 @@ public:
         }
     }
 
-    // 获取座位位置描述
-    std::string getPositionDescription() const {
+    std::string getPositionStr() const {
         return std::to_string(rowNum) + "排" + std::to_string(columnNum) + "座";
     }
 };
 
-// 订单类
 export class Order {
 public:
     int orderId = 0;
@@ -301,7 +299,6 @@ public:
         complete
     } status;
 
-    // 关联信息
     std::string username;
     std::string movieTitle;
     std::string cinemaName;
@@ -318,7 +315,7 @@ public:
           totalAmount(totalAmount), createTime(createTime), payTime(payTime),
           payMethod(PayMethod), status(status) {}
 
-    std::string getPayMethodDescription() const {
+    std::string getPayMethodStr() const {
         switch (payMethod) {
             case PayMethod::alipay: return "支付宝";
             case PayMethod::wechat: return "微信";
@@ -327,7 +324,7 @@ public:
         }
     }
 
-    std::string getOrderStatusDescription() const {
+    std::string getOrderStatusStr() const {
         switch (status) {
             case Status::nopaid: return "待支付";
             case Status::paid: return "已支付";

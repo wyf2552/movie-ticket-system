@@ -18,12 +18,18 @@ set_config("linkdirs", mysql_libdir)
 set_config("links", "mysqlcppconn")
 set_config("rpathdirs", mysql_libdir)
 
--- Target: database
-target("database")
-    set_kind("binary")
-    add_files("Entities.cpp", "main.cpp")
-
 -- Target: entities
 target("entities")
     set_kind("binary")
-    add_files("Database.cpp", "main_database.cpp")
+    add_files(
+        "Entities.cxx",
+        "test/Entities.cxx"
+    )
+
+-- Target: database
+target("database")
+    set_kind("binary")
+    add_files(
+        "Database.cpp",
+        "test/Database.cxx"
+    )
