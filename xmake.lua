@@ -30,6 +30,6 @@ target("entities")
 target("database")
     set_kind("binary")
     add_files(
-        "Database.cpp",
+        "Database.cxx",
         "test/Database.cxx"
     )
