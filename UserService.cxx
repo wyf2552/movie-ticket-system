@@ -82,8 +82,186 @@ bool UserService::registerUser(User& user) {
     }
 }
 
-// User* UserService::login(const std::string& username, const std::string& password) {
-//     try {
-//         auto pstmt = _db.prepareStatement
-//     }
-// }
+User* UserService::login(const std::string& username, const std::string& password) {
+    try {
+        auto pstmt = _db.prepareStatement(
+            "select * from User where username = ? and password = ? and user_status = 1"
+        );
+        if (!pstmt) {
+            return nullptr;
+        }
+        pstmt->setString(1, username);
+        pstmt->setString(2, password);
+
+        auto rs = std::unique_ptr<sql::ResultSet>(pstmt->executeQuery());
+
+        if (rs && rs->next()) {
+            User* user = new User();
+            user->userId = rs->getInt("user_id");
+            user->password = rs->getString("password");
+            user->realName = rs->getString("real_name");
+            user->gender = rs->getString("gender");
+            user->phone = rs->getString("phone");
+            user->email = rs->getString("email");
+            user->regTime = rs->getString("reg_time");
+            user->lastLogin = rs->getString("last_login");
+            user->userStatus = rs->getInt("user_status");
+            user->userType = rs->getInt("user_type");
+
+            pstmt = _db.prepareStatement("update User set last_login = NOW() where user_id = ?");
+            if (pstmt) {
+                pstmt->setInt(1, user->userId);
+                pstmt->executeUpdate();
+            }
+            return user;
+        }
+        return nullptr;
+    } catch (sql::SQLException &e) {
+        std::cerr << "User Login Error: " << e.what() << std::endl;
+        return nullptr;
+    }
+}
+
+User* UserService::getUserById(int userId) {
+    try {
+        auto pstmt = _db.prepareStatement("select * from User where user_id = ?");
+        if (!pstmt) {
+            return nullptr;
+        }
+
+        pstmt->setInt(1, userId);
+        auto rs = std::unique_ptr<sql::ResultSet>(pstmt->executeQuery());
+
+        if (rs && rs->next()) {
+            User* user = new User();
+            user->userId = rs->getInt("user_id");
+            user->username = rs->getString("username");
+            user->password = rs->getString("password");
+            user->realName = rs->getString("real_name");
+            user->gender = rs->getString("gender");
+            user->phone = rs->getString("phone");
+            user->email = rs->getString("email");
+            user->regTime = rs->getString("reg_time");
+            user->lastLogin = rs->getString("last_login");
+            user->userStatus = rs->getInt("user_status");
+            user->userType = rs->getInt("user_type");
+            return user;
+        }
+        return nullptr;
+    } catch (sql::SQLException &e) {
+        std::cerr << "Get User Error: " << e.what() << std::endl;
+        return nullptr;
+    }
+}
+
+std::vector<User*> UserService::getAllUsers() {
+    std::vector<User*> users;
+    try {
+        auto rs = _db.query("select * from User order by user_id");
+
+        if (rs) {
+            while (rs->next()) {
+                User* user = new User();
+                user->userId = rs->getInt("user_id");
+                user->username = rs->getString("username");
+                user->password = rs->getString("password");
+                user->realName = rs->getString("real_name");
+                user->gender = rs->getString("gender");
+                user->phone = rs->getString("phone");
+                user->email = rs->getString("email");
+                user->regTime = rs->getString("reg_time");
+                user->lastLogin = rs->getString("last_login");
+                user->userStatus = rs->getInt("user_status");
+                user->userType = rs->getInt("user_type");
+                users.push_back(user);
+            }
+        }
+    } catch (sql::SQLException &e) {
+        std ::cerr << "Get All Users Error: " << e.what() << std::endl;
+    }
+    return users;
+}
+
+bool UserService::updateUser(const User& user) {
+    try {
+        auto pstmt = _db.prepareStatement(
+            "update User set real_name = ?, gender = ?, phone = ?, email = ?, user_status = ?, user_type = ? where user_id = ?"
+        );
+        if (!pstmt) {
+            return false;
+        }
+
+        pstmt->setString(1, user.realName);
+        pstmt->setString(2, user.gender);
+        pstmt->setString(3, user.phone);
+        pstmt->setString(4, user.email);
+        pstmt->setInt(5, user.userStatus);
+        pstmt->setInt(6, user.userType);
+        pstmt->setInt(7, user.userId);
+
+        return pstmt->executeUpdate() > 0;
+    } catch (sql::SQLException &e) {
+        std::cerr << "Update User Error: " << e.what() << std::endl;
+        return false;
+    }
+}
+
+bool UserService::changePassword(int userId, const std::string& oldPassword, const std::string& newPassword) {
+    try {
+        auto pstmt = _db.prepareStatement("select password from User where user_id = ?");
+        if (!pstmt) {
+            return false;
+        }
+        pstmt->setInt(1, userId);
+        auto rs = std::unique_ptr<sql::ResultSet>(pstmt->executeQuery());
+
+        if (rs && rs->next()) {
+            std::string currentPassword = rs->getString("password");
+            if (currentPassword != oldPassword) {
+                std::cout << "旧密码不正确！" << std::endl;
+                return false;
+
+            }
+
+            pstmt = _db.prepareStatement("update User set password = ? where user_id = ?");
+            if (!pstmt) {
+                return false;
+            }
+
+            pstmt->setString(1, newPassword);
+            pstmt->setInt(2, userId);
+
+            return pstmt->executeUpdate() > 0;
+        }
+        return false;
+    } catch (sql::SQLException &e) {
+        std::cerr << "Change Password Error: " << e.what() << std::endl;
+        return false;
+    }
+}
+
+bool UserService::deleteUser(int userId) {
+    try {
+        auto pstmt = _db.prepareStatement("select count(*) from Orders where user_id = ?");
+        if (!pstmt) {
+            return false;
+        }
+        pstmt->setInt(1, userId);
+        auto rs = std::unique_ptr<sql::ResultSet>(pstmt->executeQuery());
+
+        if (rs && rs->next() && rs->getInt(1) > 0) {
+            std::cout << "用户有关联订单,无法删除!" << std::endl;
+            return false;
+        }
+
+        pstmt = _db.prepareStatement("delete from User where User_id = ?");
+        if (!pstmt) {
+            return false;
+        }
+        pstmt->setInt(1, userId);
+        return pstmt->executeUpdate() > 0;
+    } catch (sql::SQLException &e) {
+        std::cerr << "Delete User Error: " << e.what() << std::endl;
+        return false;
+    }
+}
