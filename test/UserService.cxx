@@ -16,7 +16,7 @@ int main() {
         UserService userservice(db);
         User user1(1, "tom", "pwd", "tom", "f", "phone", "email");
         User user2(2, "bob", "pwd", "bob", "m", "mphone", "gmail");
-         Order order(0, "ORD20221212001", 1001, 2001, 99.50, "2022-12-12 10:30:00", "2022-12-12 10:35:00", Order::PayMethod::alipay,m Order::Status::paid);
+        Order order(0, "ORD20221212001", 1001, 2001, 99.50, "2022-12-12 10:30:00", "2022-12-12 10:35:00", Order::PayMethod::alipay,m Order::Status::paid);
         userservice.registerUser(user1);
 
 

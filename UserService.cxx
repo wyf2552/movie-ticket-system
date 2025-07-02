@@ -1,6 +1,5 @@
 module;
 
-
 #include <ctime>
 #include <stdexcept>
 #include <string>

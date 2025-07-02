@@ -4,6 +4,8 @@ module;
 #include <iomanip>
 #include <sstream>
 #include <vector>
+#include <concepts>
+#include <type_traits>
 
 export module entities;
 
@@ -120,6 +122,8 @@ public:
             default: return "未知";
         }
     }
+
+
 };
 
 //影厅类
@@ -334,3 +338,9 @@ public:
         }
     }
 };
+
+export template<typename T, typename U>
+requires std::convertible_to<T, U> || std::convertible_to<U, T>
+U statusCast(T t) {
+    return static_cast<U>(t);
+}
