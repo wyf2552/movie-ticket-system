@@ -339,8 +339,9 @@ public:
     }
 };
 
-export template<typename T, typename U>
-requires std::convertible_to<T, U> || std::convertible_to<U, T>
-U statusCast(T t) {
-    return static_cast<U>(t);
+export template <typename From, typename To>
+requires ((std::is_enum_v<From> && std::same_as<To, int>) ||
+          (std::is_enum_v<To> && std::same_as<From, int> ))
+constexpr To statusCast(From value) {
+    return static_cast<To>(value);
 }
