@@ -54,3 +54,15 @@ target("movieservice")
         "MovieService.cxx",
         "test/MovieService.cxx"
     )
+
+-- Target: CinemaService
+target("cinemaservice")
+    set_kind("binary")
+    add_files(
+        "Database.cxx",
+        "Entities.cxx",
+        "UserService.cxx",
+        "MovieService.cxx",
+        "CinemaService.cxx",
+        "test/CinemaService.cxx"
+    )

@@ -256,11 +256,44 @@ bool MovieService::deleteMovie(int movieId) {
     }
 }
 
-// std::vector<Movie*> MovieService::searchMovies(const std::string& keyword) {
-//     std::vector<Movie*> movies;
-//     try {
-//         auto pstmt = _db,prepareStatement(
+std::vector<Movie*> MovieService::searchMovies(const std::string& keyword) {
+    std::vector<Movie*> movies;
+    try {
+        auto pstmt = _db.prepareStatement("select * from movie where title like ? or director like ? or actors like ? order by release_date DESC"
+        );
 
-//         )
-//     }
-// }
+        if (!pstmt) {
+            return movies;
+        }
+
+        std::string likeKeyword = "%" + keyword + "%";
+        pstmt->setString(1, likeKeyword);
+        pstmt->setString(2, likeKeyword);
+        pstmt->setString(3, likeKeyword);
+
+        auto rs = std::unique_ptr<sql::ResultSet>(pstmt->executeQuery());
+
+        if (rs) {
+            while (rs->next()) {
+                Movie* movie = new Movie();
+                movie->movieId = rs->getInt("movie_id");
+                movie->title = rs->getString("title");
+                movie->director = rs->getString("director");
+                movie->actors = rs->getString("actors");
+                movie->movieType = rs->getString("movie_type");
+                movie->duration = rs->getInt("duration");
+                movie->releaseDate = rs->getString("release_date");
+                movie->language = rs->getString("language");
+                movie->country = rs->getString("country");
+                movie->synopsis = rs->getString("synopsis");
+                movie->poster = rs->getString("poster");
+                movie->rating = rs->getDouble("rating");
+                movie->status = statusCast<int, Movie::Status>(rs->getInt("status"));
+                movies.push_back(movie);
+            }
+        }
+    } catch (sql::SQLException &e) {
+        std::cerr << "Search Movies Error: " << e.what() << std::endl;
+    }
+    return movies;
+}
