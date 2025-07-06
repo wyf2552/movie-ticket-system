@@ -228,3 +228,168 @@ Hall* CinemaService::getHallById(int hallId) {
         return nullptr;
     }
 }
+
+std::vector<Hall*> CinemaService::getHallsByCinemaId(int cinemaId) {
+    std::vector<Hall*> halls;
+    try {
+        auto pstmt = _db.prepareStatement("select * from hall where cinema_id = ? order by hall_id");
+        if (!pstmt) {
+            return halls;
+        }
+
+        pstmt->setInt(1, cinemaId);
+        auto rs = std::unique_ptr<sql::ResultSet>(pstmt->executeQuery());
+
+        if (rs) {
+            while (rs->next()) {
+                Hall* hall = new Hall();
+                hall->hallId = rs->getInt("hall_id");
+                hall->cinemaId = rs->getInt("cinema_id");
+                hall->hallName = rs->getString("hall_name");
+                hall->seatCount = rs->getInt("seat_string");
+                hall->hallType = rs->getString("hall_type");
+                hall->status = statusCast<int, Hall::Status>(rs->getInt("status"));
+                halls.push_back(hall);
+            }
+        }
+    } catch (sql::SQLException &e) {
+        std::cerr << "Get Halls By Cinema Error: " << e.what() << std::endl;
+    }
+    return halls;
+}
+
+bool CinemaService::updateHall(const Hall& hall) {
+    try {
+        auto pstmt = _db.prepareStatement("update hall set cinema_id = ?, hall_name = ?, seat_count = ?, hall_type = ?, status = ? where hall_id = ?");
+        if (!pstmt) {
+            return false;
+        }
+
+        pstmt->setInt(1, hall.cinemaId);
+        pstmt->setString(2, hall.hallName);
+        pstmt->setInt(3, hall.seatCount);
+        pstmt->setString(4, hall.hallType);
+        pstmt->setInt(5, statusCast<Hall::Status, int>(hall.status));
+        pstmt->setInt(6, hall.hallId);
+
+        return pstmt->executeUpdate() > 0;
+    } catch (sql::SQLException &e) {
+        std::cerr << "Update Hall Error: " << e.what() << std::endl;
+        return false;
+    }
+}
+
+bool CinemaService::deleteHall(int hallId) {
+    try {
+        auto pstmt = _db.prepareStatement("select count(*) from seat where hall_id = ?");
+        if (!pstmt) {
+            return false;
+        }
+
+        pstmt->setInt(1, hallId);
+        auto rs = std::unique_ptr<sql::ResultSet>(pstmt->executeQuery());
+
+        if (rs && rs->next() && rs->getInt(1) > 0) {
+            std::cout << "影厅存在关联座位,无法删除!" << std::endl;
+            return false;
+        }
+
+        pstmt = _db.prepareStatement("delete from hall where hall_id = ?");
+        if (!pstmt) {
+            return false;
+        }
+
+        pstmt->setInt(1, hallId);
+        return pstmt->executeUpdate() > 0;
+    } catch (sql::SQLException &e) {
+        std::cerr << "Delete Hall Error: " << e.what() << std::endl;
+        return false;
+    }
+}
+
+bool CinemaService::addSeats(int hallId, int rows, int columns) {
+    try {
+        _db.beginTransaction();
+
+        for (int row = 1; row <= rows; row++) {
+            for (int col = 1; col <= columns; col++) {
+                auto pstmt = _db.prepareStatement("insert into seat(hall_id, row_num, column_num, seat_type, status) values (?, ?, ?, 0, 1)");
+
+                if (!pstmt) {
+                    _db.rollback();
+                    return false;
+                }
+
+                pstmt->setInt(1, hallId);
+                pstmt->setInt(2, row);
+                pstmt->setInt(3, col);
+                pstmt->executeUpdate();
+            }
+        }
+
+        auto pstmt = _db.prepareStatement("update hall set seat_count = ? where hall_id = ?");
+
+        if (!pstmt) {
+            _db.rollback();
+            return false;
+        }
+
+        pstmt->setInt(1, rows * columns);
+        pstmt->setInt(2, hallId);
+        pstmt->executeUpdate();
+
+        _db.commit();
+        return true;
+    } catch (sql::SQLException &e) {
+        std::cerr << "Add Seats Error: " << e.what() << std::endl;
+        _db.rollback();
+        return false;
+    }
+}
+
+std::vector<Seat*> CinemaService::getSeatsByHallId(int hallId) {
+    std::vector<Seat*> seats;
+    try {
+        auto pstmt = _db.prepareStatement("select * from seat where hall_id = ? order by row_num, column_num");
+
+        if (!pstmt) {
+            return seats;
+        }
+
+        pstmt->setInt(1, hallId);
+        auto rs = std::unique_ptr<sql::ResultSet>(pstmt->executeQuery());
+
+        if (rs) {
+            while (rs->next()) {
+                Seat* seat = new Seat();
+                seat->seatId = rs->getInt("seat_id");
+                seat->hallId = rs->getInt("hall_id");
+                seat->rowNum = rs->getInt("row_num");
+                seat->columnNum = rs->getInt("column_num");
+                seat->seatType = statusCast<int, Seat::SeatType>(rs->getInt("seat_type"));
+                seat->status = statusCast<int, Seat::Status>(rs->getInt("status"));
+                seats.push_back(seat);
+            }
+        }
+    } catch (sql::SQLException &e) {
+        std::cerr << "Get Seats By Hall Error: " << e.what() << std::endl;
+    }
+    return seats;
+}
+
+bool CinemaService::updateSeat(const Seat& seat) {
+    try {
+        auto pstmt = _db.prepareStatement ("update seat set seat_type = ?, status = ? where seat_id = ?");
+        if (!pstmt) {
+            return false;
+        }
+        pstmt->setInt(1, statusCast<Seat::SeatType, int>(seat.seatType));
+        pstmt->setInt(2, statusCast<Seat::Status, int>(seat.status));
+        pstmt->setInt(3, seat.seatId);
+
+        return pstmt->executeUpdate() > 0;
+    } catch (sql::SQLException &e) {
+        std::cerr << "Update Seat Error: " << e.what() << std::endl;
+        return false;
+    }
+}
