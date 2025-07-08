@@ -44,5 +44,9 @@ int main() {
 
         ScreeningService screeningservice(db);
         screeningservice.addScreening(screening);
+        screeningservice.getScreeningById(1);
+        screeningservice.getScreeningsByMovieId(1);
+        screeningservice.getScreeningsByCinemaId(1);
     }
+
 }

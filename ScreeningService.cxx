@@ -85,3 +85,115 @@ bool ScreeningService::addScreening(Screening& screening) {
         return false;
     }
 }
+
+Screening* ScreeningService::getScreeningById(int screeningId) {
+    try {
+        auto pstmt = _db.prepareStatement("select s.*, m.title as movie_title, c.cinema_name, h.hall_name from screening s join movie m on s.movie_id = m.movie_id join cinema c on s.cinema_id = c.cinema_id join hall h on s.hall_id = h.hall_id where s.screening_id = ?");
+
+        if (!pstmt) {
+            return nullptr;
+        }
+
+        pstmt->setInt(1, screeningId);
+        auto rs = std::unique_ptr<sql::ResultSet>(pstmt->executeQuery());
+
+        if (rs && rs->next()) {
+            Screening* screening = new Screening();
+            screening->screeningId = rs->getInt("screening_id");
+            screening->movieId = rs->getInt("movie_id");
+            screening->cinemaId = rs->getInt("cinema_id");
+            screening->hallId = rs->getInt("hall_id");
+            screening->startTime = rs->getString("start_time");
+            screening->endTime = rs->getString("end_time");
+            screening->price = rs->getDouble("price");
+            screening->languageVersion = rs->getString("language_version");
+            screening->status = statusCast<int, Screening::Status>(rs->getInt("status"));
+
+            screening->movieTitle = rs->getString("movie_title");
+            screening->cinemaName = rs->getString("cinema_name");
+            screening->hallName = rs->getString("hall_name");
+
+            return screening;
+        }
+        return nullptr;
+    } catch (sql::SQLException &e) {
+        std::cerr << "Get Screening Error: " << e.what() << std::endl;
+        return nullptr;
+    }
+}
+
+std::vector<Screening*> ScreeningService::getScreeningsByMovieId(int movieId) {
+    std::vector<Screening*> screenings;
+    try {
+        auto pstmt = _db.prepareStatement("select s.*, m.title as movie_title, c.cinema_name, h.hall_name form screening s join movie m on s.movie_id = m.movie_id join cinema c on s.cinema_id = c.cinema_id join hall h on s.hall_id = h.hall_id where s.movie_id = ? and s.start_time >= now() order by s.start_time");
+
+        if (!pstmt) {
+            return screenings;
+        }
+
+        pstmt->setInt(1, movieId);
+        auto rs = std::unique_ptr<sql::ResultSet>(pstmt->executeQuery());
+
+        if (rs) {
+            while (rs->next()) {
+                Screening* screening = new Screening();
+                screening->screeningId = rs->getInt("screening_id");
+                screening->movieId = rs->getInt("movie_id");
+                screening->cinemaId = rs->getInt("cinema_id");
+                screening->hallId = rs->getInt("hall_id");
+                screening->startTime = rs->getString("start_time");
+                screening->endTime = rs->getString("end_time");
+                screening->price = rs->getDouble("price");
+                screening->languageVersion = rs->getString("language_version");
+                screening->status = statusCast<int, Screening::Status>(rs->getInt("status"));
+
+                screening->movieTitle = rs->getString("movie_title");
+                screening->cinemaName = rs->getString("cinema_name");
+                screening->hallName = rs->getString("hall_name");
+
+                screenings.push_back(screening);
+            }
+        }
+    } catch (sql::SQLException &e) {
+        std::cerr << "Get Screenings By Movie Error: " << e.what() << std::endl;
+    }
+    return screenings;
+}
+
+std::vector<Screening*> ScreeningService::getScreeningsByCinemaId(int cinemaId) {
+    std::vector<Screening*> screenings;
+    try {
+        auto pstmt = _db.prepareStatement("select s.*, m.title as movie_title, c.cinema_name, h.hall_name from screening s join movie m on s.movie_id = m.movie_id join cinema c on s.cinema_id = c.cinema_id join hall h on s.hall_id = h.hall_id where s cinema_id = ? and s.start_time >= now() order by s.start_time");
+
+        if (!pstmt) {
+            return screenings;
+        }
+
+        pstmt->setInt(1, cinemaId);
+        auto rs = std::unique_ptr<sql::ResultSet>(pstmt->executeQuery());
+
+        if (rs) {
+            while (rs->next()) {
+                Screening* screening = new Screening();
+                screening->screeningId = rs->getInt("screening_id");
+                screening->movieId = rs->getInt("movie_id");
+                screening->cinemaId = rs->getInt("cinema_id");
+                screening->hallId = rs->getInt("hall_id");
+                screening->startTime = rs->getString("start_time");
+                screening->endTime = rs->getString("end_time");
+                screening->price = rs->getDouble("price");
+                screening->languageVersion = rs->getString("language_version");
+                screening->status = statusCast<int, Screening::Status>(rs->getInt("status"));
+
+                screening->movieTitle = rs->getString("movie_title");
+                screening->cinemaName = rs->getString("cinema_name");
+                screening->hallName = rs->getString("hall_name");
+
+                screenings.push_back(screening);
+            }
+        }
+    } catch (sql::SQLException &e) {
+        std::cerr << "Get Screenings By Cinema Error: " << e.what() << std::endl;
+    }
+    return screenings;
+}
