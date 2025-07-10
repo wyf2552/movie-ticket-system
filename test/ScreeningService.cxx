@@ -41,12 +41,18 @@ int main() {
         Seat seat(1, 1, 10, 10, Seat::SeatType::normal, Seat::Status::normal);
 
         Screening screening(1, 1, 1, 1, 2024-12-12, 2025-01-12, 34.52, "简体中文", Screening::Status::normal, "灵笼", "万达影业", "1号厅");
-
+        ScreeningSeat screeningseat(1, 1, 1, ScreeningSeat::Status::sold, 2024-12-12, 1, 12, 12);
         ScreeningService screeningservice(db);
         screeningservice.addScreening(screening);
         screeningservice.getScreeningById(1);
         screeningservice.getScreeningsByMovieId(1);
         screeningservice.getScreeningsByCinemaId(1);
+        screeningservice.getScreeningSeats(1);
+        screeningservice.updateScreening(1);
+        screeningservice.deleteScreening(1);
+        screeningservice.lockSeat(1, 1);
+        screeningservice.unlock(1, 1);
+        screeningservice.releaseTimeoutSeats();
     }
 
 }

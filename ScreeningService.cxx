@@ -197,3 +197,150 @@ std::vector<Screening*> ScreeningService::getScreeningsByCinemaId(int cinemaId) 
     }
     return screenings;
 }
+
+std::vector<ScreeningSeat*> ScreeningService::getScreeningSeats(int screeningId) {
+    std::vector<ScreeningSeat*> seats;
+    try {
+        auto pstmt = _db.prepareStatement("select ss.*, s.row_num, s.column_num from screeningseat ss join seat s on ss.seat_id = s.seat_id where ss.screening_id = ? order by s.row_num, s.cloumn_num");
+
+        if (!pstmt) {
+            return seats;
+        }
+
+        pstmt->setInt(1, screeningId);
+        auto rs = std::unique_ptr<sql::ResultSet>(pstmt->executeQuery());
+
+        if (rs) {
+            while (rs->next()) {
+                ScreeningSeat* seat = new ScreeningSeat();
+                seat->screeningSeatId = rs->getInt("screening_seat_id");
+                seat->screeningId = rs->getInt("screening_id");
+                seat->seatId = rs->getInt("seat_id");
+                seat->status = statusCast<int, ScreeningSeat::Status>(rs->getInt("status"));
+                seat->lockTime = rs->getString("lock_time");
+                seat->lockUserId = rs->getInt("lock_user_id");
+                seat->rowNum = rs->getInt("row_num");
+                seat->columnNum = rs->getInt("cloumn_num");
+                seats.push_back(seat);
+            }
+        }
+    } catch (sql::SQLException &e) {
+        std::cerr << "Get Screening Seats Error: " << e.what() << std::endl;
+    }
+    return seats;
+}
+
+bool ScreeningService::updateScreening(const Screening& screening) {
+    try {
+        auto pstmt = _db.prepareStatement("uspdate screening set movie_id = ?, cinema_id = ?, hall_id = ?, start_time = ?, end_time = ?, price = ?, language_version = ?, status = ? where screening_id = ?");
+
+        if (!pstmt) {
+            return false;
+        }
+
+        pstmt->setInt(1, screening.movieId);
+        pstmt->setInt(2, screening.cinemaId);
+        pstmt->setInt(3, screening.hallId);
+        pstmt->setString(4, screening.startTime);
+        pstmt->setString(5, screening.endTime);
+        pstmt->setDouble(6, screening.price);
+        pstmt->setString(7, screening.languageVersion);
+        pstmt->setInt(8, statusCast<Screening::Status, int>(screening.status));
+        pstmt->setInt(9, screening.screeningId);
+    } catch (sql::SQLException &e) {
+        std::cerr << "Update Screening Error: " << e.what() << std::endl;
+        return false;
+    }
+}
+
+bool ScreeningService::deleteScreening(int screeningId) {
+    try {
+        auto pstmt = _db.prepareStatement("select count(*) from orders where screening_id = ?");
+        if (!pstmt) {
+            return false;
+        }
+
+        pstmt->setInt(1, screeningId);
+        auto rs = std::unique_ptr<sql::ResultSet>(pstmt->executeQuery());
+
+        if (rs && rs->next() && rs->getInt(1) > 0) {
+            std::cout << "排片存在关联订单，无法删除!" << std::endl;
+            return false;
+        }
+
+        _db.beginTransaction();
+
+        pstmt = _db.prepareStatement("delete from screeningseat where screening_id = ?");
+        if (!pstmt) {
+            _db.rollback();
+            return false;
+        }
+
+        pstmt->setInt(1, screeningId);
+        pstmt->executeUpdate();
+
+        pstmt = _db.prepareStatement("delete from screening where screening_id = ?");
+        if (!pstmt) {
+            _db.rollback();
+            return false;
+        }
+
+        pstmt->setInt(1, screeningId);
+        bool result = pstmt->executeUpdate() > 0;
+
+        if (result) {
+            _db.commit();
+        } else {
+            _db.rollback();
+        }
+        return result;
+    } catch (sql::SQLException &e) {
+        std::cerr << "Delete Screening Error: " << e.what() << std::endl;
+        _db.rollback();
+        return false;
+    }
+}
+
+bool ScreeningService::lockSeat(int screeningSeatId, int userId) {
+    try {
+        auto pstmt = _db.prepareStatement("update screeningseat set status = 2, lock_time = now(), lock_user_id = ? where screening_seat_id = ? and status = 0");
+
+        if (!pstmt) {
+            return false;
+        }
+
+        pstmt->setInt(1, userId);
+        pstmt->setInt(2, screeningSeatId);
+
+        return pstmt->executeUpdate() > 0;
+    } catch (sql::SQLException &e) {
+        std::cerr << "Lock Seat Error: " << e.what() << std::endl;
+        return false;
+    }
+}
+
+bool ScreeningService::unlockSeat(int screeningSeatId, int userId) {
+    try {
+        auto pstmt = _db.prepareStatement("update screeningseat set status = 0, lock_time = NULL, lock_user_id = NULL where screening_seat_id = ? and status = 2 and lock_user_id = ?");
+
+        if (!pstmt) {
+            return false;
+        }
+
+        pstmt->setInt(1, screeningSeatId);
+        pstmt->setInt(2, userId);
+
+        return pstmt->executeUpdate() > 0;
+    } catch (sql::SQLException &e) {
+        std::cerr << "Unlock Seat Error: " << e.what() << std::endl;
+        return false;
+    }
+}
+
+void ScreeningService::releaseTimeoutSeats() {
+    try {
+        _db.execute("update screeningseat status = 0, lock_time = NULL, lock_user_id = NULL where status = 2 and lock_time < date_sub(now(), interval 15 minute)");
+    }  catch (sql::SQLException &e) {
+        std::cerr << "Unlock Seat Error: " << e.what() << std::endl;
+    }
+}
