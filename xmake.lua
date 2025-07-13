@@ -79,3 +79,17 @@ target("screeningservice")
         "ScreeningService.cxx",
         "test/ScreeningService.cxx"
     )
+
+-- Target: ScreeningService
+target("orderservice")
+    set_kind("binary")
+    add_files(
+        "Database.cxx",
+        "Entities.cxx",
+        "UserService.cxx",
+        "MovieService.cxx",
+        "CinemaService.cxx",
+        "ScreeningService.cxx",
+        "OrderService.cxx",
+        "test/OrderService.cxx"
+    )
