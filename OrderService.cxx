@@ -4,6 +4,7 @@ module;
 #include <stdexcept>
 #include <string>
 #include <memory>
+#include <iomanip>
 #include <iostream>
 #include <mysql_connection.h>
 #include <cppconn/driver.h>
@@ -156,17 +157,17 @@ Order* OrderService::createOrder(int userId, int screeningId, const std::vector<
         _db.commit();
 
         Order* order = new Order();
-        order->orderId(orderId);
-        order->orderNo(orderNo);
-        order->userId(userId);
-        order->screeningId(screeningId);
-        order->totalAmount(totalAmount);
+        order->orderId = orderId;
+        order->orderNo = orderNo;
+        order->userId = userId;
+        order->screeningId = screeningId;
+        order->totalAmount = totalAmount;
 
-        order->movieTitle(movieTitle);
-        order->cinemaName(cinemaName);
-        order->hallName(hallName);
-        order->startTime(startTime);
-        order->seatPositions(seatPositions);
+        order->movieTitle = movieTitle;
+        order->cinemaName = cinemaName;
+        order->hallName = hallName;
+        order->startTime = startTime;
+        order->seatPositions = seatPositions;
 
         return order;
     } catch (sql::SQLException &e) {
@@ -184,7 +185,7 @@ bool OrderService::payOrder(int orderId, int payMethod) {
         }
 
         pstmt->setInt(1, orderId);
-        auto rs = std::unique_ptr<sql::ResultSet>(pstmt->execuetQuery());
+        auto rs = std::unique_ptr<sql::ResultSet>(pstmt->executeQuery());
 
         if (!rs || !rs->next()) {
             std::cout << "订单不存在!" << std::endl;
@@ -207,7 +208,7 @@ bool OrderService::payOrder(int orderId, int payMethod) {
         }
 
         pstmt->setInt(1, payMethod);
-        patmt->setInt(2, orderId);
+        pstmt->setInt(2, orderId);
 
         pstmt->executeUpdate();
 
@@ -222,14 +223,14 @@ bool OrderService::payOrder(int orderId, int payMethod) {
 
         _db.commit();
         return true;
-    } ctch (sql::SQLexception &e) {
+    } catch (sql::SQLException &e) {
         std::cerr << "Pay Order Error: " << e.what() << std::endl;
         _db.rollback();
         return false;
     }
 }
 
-bool OrderService::cancleOrder(int orderId, int userId) {
+bool OrderService::cancelOrder(int orderId, int userId) {
     try {
         auto pstmt = _db.prepareStatement("select order_status, user_id from orders where order_id = ?");
 
@@ -246,7 +247,7 @@ bool OrderService::cancleOrder(int orderId, int userId) {
         }
 
         int status = rs->getInt("order_status");
-        int oredrUserId = rs->getInt("user_id");
+        int orderUserId = rs->getInt("user_id");
 
         if (orderUserId != userId) {
             std::cout << "无权操作此订单!" << std::endl;
@@ -259,7 +260,7 @@ bool OrderService::cancleOrder(int orderId, int userId) {
 
         if (!pstmt) {
             _db.rollback();
-            erturn false;
+            return false;
         }
 
         pstmt->setInt(1, orderId);
@@ -283,3 +284,110 @@ bool OrderService::cancleOrder(int orderId, int userId) {
         return false;
     }
 }
+
+Order* OrderService::getOrderById(int orderId) {
+    try {
+        auto pstmt = _db.prepareStatement("select o.*, u.username, s.start_time as movie_title, c.cinema_name, h.hall_name from orders o join user u on o.user_id = u.user_id join screening s on o.screening_id = s.screening_id join movie m on s.movie_id = m.movie_id join cinema s on s.cinema_id = c.cinema_id join hall h on s.hall_id = h.hall_id where o.order_id = ?");
+
+        if (!pstmt) {
+            return nullptr;
+        }
+        pstmt->setInt(1, orderId);
+        auto rs = std::unique_ptr<sql::ResultSet>(pstmt->executeQuery());
+
+        if (rs && rs->next()) {
+            Order* order = new Order();
+            order->orderId = rs->getInt("order_id");
+            order->orderNo = rs->getString("order_no");
+            order->userId = rs->getInt("user_id");
+            order->screeningId = rs->getInt("screening_id");
+            order->totalAmount = rs->getDouble("total_amount");
+            order->createTime = rs->getString("create_time");
+            order->payTime = rs->getString("pay_time");
+            order->payMethod = statusCast<int, Order::PayMethod>(rs->getInt("pay_method"));
+            order->status = statusCast<int, Order::Status>(rs->getInt("status"));
+            order->username = rs->getString("user_name");
+            order->movieTitle = rs->getString("movie_title");
+            order->cinemaName = rs->getString("cinema_name");
+            order->hallName = rs->getString("hall_name");
+            order->startTime = rs->getString("start_time");
+
+            pstmt = _db.prepareStatement("select ss.screening_seat_id, s.row_num, s.column from orderdeltail od join screeningseat ss on od.screening_seat_id = ss.screening_seat_id join seat s on ss.seat_id = s.seat_id where od.order_id = ?");
+
+            if (pstmt) {
+                pstmt->setInt(1, orderId);
+                auto seatRs = std::unique_ptr<sql::ResultSet>(pstmt->executeQuery());
+
+                std::vector<std::string> seatPositions;
+                while (seatRs && seatRs->next()) {
+                    int rowNum = seatRs->getInt("row_num");
+                    int colNum = seatRs->getInt("column_num");
+                    seatPositions.push_back(std::to_string(rowNum) + "排" + std::to_string(colNum) + "座");
+                }
+                order->seatPositions = seatPositions;
+            }
+            return order;
+        }
+        return nullptr;
+    } catch (sql::SQLException &e) {
+        std::cerr << "Get Order Error: " << e.what() << std::endl;
+        return nullptr;
+    }
+}
+
+std::vector<Order*> OrderService::getOrdersByUserId(int userId) {
+    std::vector<Order*> orders;
+    try {
+        auto pstmt = _db.prepareStatement("select o.*, u.username, s.start_time, m.title as movie_title, c.cinema_name, h.hall_name from orders o join user u on o.user_id = u.user_id join screening s on o.screening_id = s.screening_id join movie m on s.movie_id = m.movie_id join cinema c on s.cinema_id = c.cinema_id join hall h on s.hall_id = h.hall_id where o.user_id = ? order by o.create_time DESC");
+        if (!pstmt) {
+            return orders;
+        }
+
+        pstmt->setInt(1, userId);
+        auto rs = std::unique_ptr<sql::ResultSet>(pstmt->executeQuery());
+
+        if (rs) {
+            while (rs->next()) {
+                Order* order = new Order();
+                order->orderId = rs->getInt("order_id");
+                order->orderNo = rs->getString("order_no");
+                order->userId = rs->getInt("user_id");
+                order->screeningId = rs->getInt("screening_id");
+                order->totalAmount = rs->getDouble("total_amount");
+                order->createTime = rs->getString("create_time");
+                order->payTime = rs->getString("pay_time");
+                order->payMethod = statusCast<int, Order::PayMethod>(rs->getInt("pay_method"));
+                order->status = statusCast<int, Order::Status>(rs->getInt("order_status"));
+
+                // 设置关联信息
+                order->username = rs->getString("username");
+                order->movieTitle = rs->getString("movie_title");
+                order->cinemaName = rs->getString("cinema_name");
+                order->hallName = rs->getString("hall_name");
+                order->startTime = rs->getString("start_time");
+
+                orders.push_back(order);
+            }
+        }
+
+        for (Order* order : orders) {
+            pstmt = _db.prepareStatement("select ss.screening_seat_id, s.row_num, s.column_num from orderdetail od join screeningseat_seat_id join seat s on ss.seat_id = ss.seat_id where od.order_id = ?");
+            if (pstmt) {
+                pstmt->setInt(1, order->orderId);
+                auto seatRs = std::unique_ptr<sql::ResultSet>(pstmt->executeQuery());
+
+                std::vector<std::string> seatPositions;
+                while (seatRs && seatRs->next()) {
+                    int rowNum = seatRs->getInt("row_num");
+                    int colNum = seatRs->getInt("column_num");
+                    seatPositions.push_back(std::to_string(rowNum) + "排" + std::to_string(colNum) + "座");
+                }
+                order->seatPositions = seatPositions;
+            }
+        }
+    } catch (sql::SQLException &e) {
+        std::cerr << "Get Orders By User Error: " << e.what() << std::endl;
+    }
+    return orders;
+}
+

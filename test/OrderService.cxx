@@ -51,5 +51,7 @@ int main() {
 
         orderservice payOrder(1, Order::PayMethod::alipay);
         orderservice cancleOrder(1, 1);
+        orderservice getOrderById(1);
+        orderservice getOrdersByUserId(1);
     }
 }
