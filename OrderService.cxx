@@ -229,7 +229,7 @@ bool OrderService::payOrder(int orderId, int payMethod) {
     }
 }
 
-bool OrderService::cancelOrder(int orderId, int userId) {
+bool OrderService::cancleOrder(int orderId, int userId) {
     try {
         auto pstmt = _db.prepareStatement("select order_status, user_id from orders where order_id = ?");
 
