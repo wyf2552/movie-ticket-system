@@ -53,5 +53,8 @@ int main() {
         orderservice cancleOrder(1, 1);
         orderservice getOrderById(1);
         orderservice getOrdersByUserId(1);
+        orderservice getAllOrders();
+        orderservce getMovieBoxOffice();
+        
     }
 }

@@ -246,7 +246,7 @@ bool OrderService::cancelOrder(int orderId, int userId) {
             return false;
         }
 
-        int status = rs->getInt("order_status");
+        int status = rs->getInt("status");
         int orderUserId = rs->getInt("user_id");
 
         if (orderUserId != userId) {
@@ -391,3 +391,51 @@ std::vector<Order*> OrderService::getOrdersByUserId(int userId) {
     return orders;
 }
 
+std::vector<Order*> OrderService::getAllOrders() {
+    std::vector<Order*> orders;
+    try {
+        auto rs = _db.query("select o.*, u.username, s.start_time, as movie_title, c.cinema_name, h.hall_name from orders o join user u on o.user_id = u.user_id join screening s on o.screening_id join cinema c on s.cinema_id = c.cinema_id join hall h on s.hall_id = h.hall_id order by o.create_time DESC");
+
+        if (rs) {
+            while (rs->next()) {
+                Order* order = new Order();
+                order->orderId = rs->getInt("order_id");
+                order->orderNo = rs->getString("order_no");
+                order->userId = rs->getInt("user_id");
+                order->screeningId = rs->getInt("screening_id");
+                order->totalAmount = rs->getDouble("total_amount");
+                order->createTime = rs->getString("create_time");
+                order->payTime = rs->getString("pay_time");
+                order->payMethod = statusCast<int, Order::PayMethod>(rs->getInt("pay_method"));
+                order->status = statusCast<int, Order::Status>(rs->getInt("status"));
+                order->username = rs->getString("username");
+                order->movieTitle = rs->getString("movie_title");
+                order->cinemaName = rs->getString("cinema_name");
+                order->hallName = rs->getString("hall_name");
+                order->startTime = rs->getString("start_time");
+                orders.push_back(order);
+            }
+        }
+    } catch (sql::SQLException &e) {
+        std::cerr << "Get All Orders Error: " << e.what() << std::endl;
+    }
+    return orders;
+}
+
+std::vector<std::pair<std::string, double>> OrderService::getMovieBoxOffice() {
+    std::vector<std::pair<std::string, double>> results;
+    try {
+        auto rs = _db.query("select m.title, sum(o.total_amount) as box_office from orders o join screening s on o.screening_id = s.screening_id join movie m on s.movie_id = m.movie_id where o.order_status = 1 group by m.movie_id order by box_office DESC");
+
+        if (rs) {
+            while (rs->next()) {
+                std::string movieTitle = rs->getString("title");
+                double boxOffice = rs->getDouble("box_office");
+                results.push_back(std::make_pair(movieTitle, boxOffice));
+            }
+        }
+    } catch (sql::SQLException &e) {
+        std::cerr << "Get Movie Box Office Error: " << e.what() << std::endl;
+    }
+    return results;
+}
