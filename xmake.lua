@@ -93,3 +93,18 @@ target("orderservice")
         "OrderService.cxx",
         "test/OrderService.cxx"
     )
+
+-- Target: movieticketsystemui
+target("movieticketsystemui")
+    set_kind("binary")
+    add_files(
+        "Database.cxx",
+        "Entities.cxx",
+        "UserService.cxx",
+        "MovieService.cxx",
+        "CinemaService.cxx",
+        "ScreeningService.cxx",
+        "OrderService.cxx",
+        "MovieTicketSystemUI.cxx",
+        "test/MovieTicketSystemUI.cxx"
+    )
