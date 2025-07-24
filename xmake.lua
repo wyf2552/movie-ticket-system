@@ -108,3 +108,15 @@ target("movieticketsystemui")
         "MovieTicketSystemUI.cxx",
         "test/MovieTicketSystemUI.cxx"
     )
+
+
+target("authview")
+    set_kind("binary")
+    add_files(
+        "UserService.cxx",
+        "Database.cxx",
+        "Entities.cxx",
+        "view/ViewHelper.cxx",
+        "view/AuthView.cxx",
+        "test/AuthView.cxx"
+    )

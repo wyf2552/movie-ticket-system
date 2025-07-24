@@ -26,7 +26,7 @@ public:
 
     bool registerUser(User& user);
 
-    User* login(const std::string& username, const std::string& password);
+    UserUptr login(const std::string& username, const std::string& password);
 
     User* getUserById(int UserId);
 
@@ -38,6 +38,8 @@ public:
 
     bool deleteUser(int UserId);
 };
+
+export using UserServiceSptr = std::shared_ptr<UserService>;
 
 UserService::UserService(Database& database) : _db(database) {}
 
@@ -81,7 +83,7 @@ bool UserService::registerUser(User& user) {
     }
 }
 
-User* UserService::login(const std::string& username, const std::string& password) {
+UserUptr UserService::login(const std::string& username, const std::string& password) {
     try {
         auto pstmt = _db.prepareStatement(
             "select * from User where username = ? and password = ? and user_status = 1"
@@ -95,7 +97,7 @@ User* UserService::login(const std::string& username, const std::string& passwor
         auto rs = std::unique_ptr<sql::ResultSet>(pstmt->executeQuery());
 
         if (rs && rs->next()) {
-            User* user = new User();
+            UserUptr user = std::make_unique<User>();
             user->userId = rs->getInt("user_id");
             user->password = rs->getString("password");
             user->realName = rs->getString("real_name");
@@ -114,11 +116,11 @@ User* UserService::login(const std::string& username, const std::string& passwor
             }
             return user;
         }
-        return nullptr;
     } catch (sql::SQLException &e) {
         std::cerr << "User Login Error: " << e.what() << std::endl;
-        return nullptr;
     }
+
+    return nullptr;
 }
 
 User* UserService::getUserById(int userId) {
