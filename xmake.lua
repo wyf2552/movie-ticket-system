@@ -120,3 +120,18 @@ target("authview")
         "view/AuthView.cxx",
         "test/AuthView.cxx"
     )
+
+target("movieview")
+    set_kind("binary")
+    add_files(
+        "UserService.cxx",
+        "Database.cxx",
+        "Entities.cxx",
+        "MovieService.cxx",
+        "ScreeningService.cxx",
+        "view/ViewHelper.cxx",
+        "Cinemaservice.cxx",
+        "view/AuthView.cxx",
+        "view/MovieView.cxx",
+        "test/MovieView.cxx"
+    )

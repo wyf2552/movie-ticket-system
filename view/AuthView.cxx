@@ -100,3 +100,34 @@ bool AuthView::showRegisterMenu() {
     }
 }
 
+bool AuthView::changePassword(int userId) {
+    ViewHelper::clearScreen();
+
+    ViewHelper::showMenuTitle("修改密码");
+
+    std::string oldPassword = ViewHelper::readString("请输入当前密码：");
+    std::string newPassword = ViewHelper::readString("请输入新密码：");
+    std::string confirmPassword = ViewHelper::readString("请确认新密码：");
+
+    if (oldPassword.empty() || newPassword.empty() || confirmPassword.empty()) {
+        ViewHelper::showError("密码不能为空!");
+        ViewHelper::waitForKeyPress();
+        return false;
+    }
+
+    if (newPassword != confirmPassword) {
+        ViewHelper::showError("两次输入的新密码不一致！");
+        ViewHelper::waitForKeyPress();
+        return false;
+    }
+
+    if (_userService->changePassword(userId, oldPassword, newPassword)) {
+        ViewHelper::showSuccess("密码已修改!");
+        ViewHelper::waitForKeyPress();
+        return true;
+    } else {
+        ViewHelper::showError("修改密码失败！请确认当前密码是否正确。");
+        ViewHelper::waitForKeyPress();
+        return false;
+    }
+}

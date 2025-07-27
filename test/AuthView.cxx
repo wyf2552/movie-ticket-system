@@ -18,4 +18,5 @@ int main() {
 
     authview.showLoginMenu();
     authview.showRegisterMenu();
+    authview.changePassword(1);
 }

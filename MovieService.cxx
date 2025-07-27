@@ -26,13 +26,13 @@ public:
 
     bool addMovie(Movie& movie);
 
-    Movie* getMovieById(int moveiId);
+    MovieSptr getMovieById(int moveiId);
 
-    std::vector<Movie*> getAllMovies();
+    std::vector<MovieSptr> getAllMovies();
 
-    std::vector<Movie*> getNowPlayingMovies();
+    std::vector<MovieSptr> getNowPlayingMovies();
 
-    std::vector<Movie*> getComingSoonMovies();
+    std::vector<MovieSptr> getComingSoonMovies();
 
     bool updateMovie(const Movie& movie);
 
@@ -73,7 +73,7 @@ bool MovieService::addMovie(Movie& movie) {
     }
 }
 
-Movie* MovieService::getMovieById(int movieId) {
+MovieSptr MovieService::getMovieById(int movieId) {
     try {
         auto pstmt = _db.prepareStatement("select * from Movie where movie_id = ?");
         if (!pstmt) {
@@ -108,8 +108,8 @@ Movie* MovieService::getMovieById(int movieId) {
     }
 }
 
-std::vector<Movie*> MovieService::getAllMovies() {
-    std::vector<Movie*> movies;
+std::vector<MovieSptr> MovieService::getAllMovies() {
+    std::vector<MovieSptr> movies;
     try {
         auto rs = _db.query("select * from Movie order by release_date DESC");
 
@@ -140,8 +140,8 @@ std::vector<Movie*> MovieService::getAllMovies() {
     return movies;
 }
 
-std::vector<Movie*> MovieService::getNowPlayingMovies() {
-    std::vector<Movie*> movies;
+std::vector<MovieSptr> MovieService::getNowPlayingMovies() {
+    std::vector<MovieSptr> movies;
     try {
         auto rs = _db.query("select * from Movie where status = 1 order by release_date DESC");
 
@@ -170,8 +170,8 @@ std::vector<Movie*> MovieService::getNowPlayingMovies() {
     return movies;
 }
 
-std::vector<Movie*> MovieService::getComingSoonMovies() {
-    std::vector<Movie*> movies;
+std::vector<MovieSptr> MovieService::getComingSoonMovies() {
+    std::vector<MovieSptr> movies;
     try {
         auto rs = _db.query("select * from Movie where status = 2 order by release_date ASC");
 

@@ -52,7 +52,7 @@ public:
 };
 export using UserUptr = std::unique_ptr<User>;
 export using UserSptr = std::shared_ptr<User>;
- 
+
 // 电影类
 export class Movie {
 public:
@@ -96,6 +96,8 @@ public:
     }
 };
 
+export using MovieUptr = std::unique_ptr<Movie>;
+export using MovieSptr = std::shared_ptr<Movie>;
 // 影院类
 export class Cinema {
 public:
