@@ -28,13 +28,13 @@ public:
 
     bool addScreening(Screening& screening);
 
-    Screening* getScreeningById(int screeningId);
+    ScreeningUptr getScreeningById(int screeningId);
 
-    std::vector<Screening*> getScreeningsByMovieId(int movieId);
+    std::vector<ScreeningUptr> getScreeningsByMovieId(int movieId);
 
-    std::vector<Screening*> getScreeningsByCinemaId(int cinemaId);
+    std::vector<ScreeningUptr> getScreeningsByCinemaId(int cinemaId);
 
-    std::vector<ScreeningSeat*> getScreeningSeats(int screeningId);
+    std::vector<ScreeningSeatUptr> getScreeningSeats(int screeningId);
 
     bool updateScreening(const Screening& screening);
 
@@ -46,6 +46,8 @@ public:
 
     void releaseTimeoutSeats();
 };
+
+export using ScreeningServiceSptr = std::shared_ptr<ScreeningService>;
 
 ScreeningService::ScreeningService(Database& database) : _db(database) {}
 
@@ -86,7 +88,7 @@ bool ScreeningService::addScreening(Screening& screening) {
     }
 }
 
-Screening* ScreeningService::getScreeningById(int screeningId) {
+ScreeningUptr ScreeningService::getScreeningById(int screeningId) {
     try {
         auto pstmt = _db.prepareStatement("select s.*, m.title as movie_title, c.cinema_name, h.hall_name from screening s join movie m on s.movie_id = m.movie_id join cinema c on s.cinema_id = c.cinema_id join hall h on s.hall_id = h.hall_id where s.screening_id = ?");
 
@@ -98,7 +100,7 @@ Screening* ScreeningService::getScreeningById(int screeningId) {
         auto rs = std::unique_ptr<sql::ResultSet>(pstmt->executeQuery());
 
         if (rs && rs->next()) {
-            Screening* screening = new Screening();
+            auto screening = std::make_unique<Screening>();
             screening->screeningId = rs->getInt("screening_id");
             screening->movieId = rs->getInt("movie_id");
             screening->cinemaId = rs->getInt("cinema_id");
@@ -122,8 +124,8 @@ Screening* ScreeningService::getScreeningById(int screeningId) {
     }
 }
 
-std::vector<Screening*> ScreeningService::getScreeningsByMovieId(int movieId) {
-    std::vector<Screening*> screenings;
+std::vector<ScreeningUptr> ScreeningService::getScreeningsByMovieId(int movieId) {
+    std::vector<ScreeningUptr> screenings;
     try {
         auto pstmt = _db.prepareStatement("select s.*, m.title as movie_title, c.cinema_name, h.hall_name form screening s join movie m on s.movie_id = m.movie_id join cinema c on s.cinema_id = c.cinema_id join hall h on s.hall_id = h.hall_id where s.movie_id = ? and s.start_time >= now() order by s.start_time");
 
@@ -136,7 +138,7 @@ std::vector<Screening*> ScreeningService::getScreeningsByMovieId(int movieId) {
 
         if (rs) {
             while (rs->next()) {
-                Screening* screening = new Screening();
+                auto screening = std::make_unique<Screening>();
                 screening->screeningId = rs->getInt("screening_id");
                 screening->movieId = rs->getInt("movie_id");
                 screening->cinemaId = rs->getInt("cinema_id");
@@ -160,8 +162,8 @@ std::vector<Screening*> ScreeningService::getScreeningsByMovieId(int movieId) {
     return screenings;
 }
 
-std::vector<Screening*> ScreeningService::getScreeningsByCinemaId(int cinemaId) {
-    std::vector<Screening*> screenings;
+std::vector<ScreeningUptr> ScreeningService::getScreeningsByCinemaId(int cinemaId) {
+    std::vector<ScreeningUptr> screenings;
     try {
         auto pstmt = _db.prepareStatement("select s.*, m.title as movie_title, c.cinema_name, h.hall_name from screening s join movie m on s.movie_id = m.movie_id join cinema c on s.cinema_id = c.cinema_id join hall h on s.hall_id = h.hall_id where s cinema_id = ? and s.start_time >= now() order by s.start_time");
 
@@ -174,7 +176,7 @@ std::vector<Screening*> ScreeningService::getScreeningsByCinemaId(int cinemaId) 
 
         if (rs) {
             while (rs->next()) {
-                Screening* screening = new Screening();
+                auto screening = std::make_unique<Screening>();
                 screening->screeningId = rs->getInt("screening_id");
                 screening->movieId = rs->getInt("movie_id");
                 screening->cinemaId = rs->getInt("cinema_id");
@@ -198,8 +200,8 @@ std::vector<Screening*> ScreeningService::getScreeningsByCinemaId(int cinemaId) 
     return screenings;
 }
 
-std::vector<ScreeningSeat*> ScreeningService::getScreeningSeats(int screeningId) {
-    std::vector<ScreeningSeat*> seats;
+std::vector<ScreeningSeatUptr> ScreeningService::getScreeningSeats(int screeningId) {
+    std::vector<ScreeningSeatUptr> seats;
     try {
         auto pstmt = _db.prepareStatement("select ss.*, s.row_num, s.column_num from screeningseat ss join seat s on ss.seat_id = s.seat_id where ss.screening_id = ? order by s.row_num, s.cloumn_num");
 
@@ -212,7 +214,7 @@ std::vector<ScreeningSeat*> ScreeningService::getScreeningSeats(int screeningId)
 
         if (rs) {
             while (rs->next()) {
-                ScreeningSeat* seat = new ScreeningSeat();
+                auto seat = std::make_unique<ScreeningSeat>();
                 seat->screeningSeatId = rs->getInt("screening_seat_id");
                 seat->screeningId = rs->getInt("screening_id");
                 seat->seatId = rs->getInt("seat_id");

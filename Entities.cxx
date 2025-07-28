@@ -50,6 +50,7 @@ public:
     // 判断是否为管理员
     bool isAdmin() const { return userType == 1; }
 };
+
 export using UserUptr = std::unique_ptr<User>;
 export using UserSptr = std::shared_ptr<User>;
 
@@ -129,6 +130,9 @@ public:
 
 };
 
+export using CinemaUptr = std::unique_ptr<Cinema>;
+export using CinemaSptr = std::shared_ptr<Cinema>;
+
 //影厅类
 export class Hall {
 public:
@@ -157,6 +161,9 @@ public:
         }
     }
 };
+
+export using CinemaUptr = std::unique_ptr<Cinema>;
+export using CinemaSptr = std::shared_ptr<Cinema>;
 
 // 排片类
 export class Screening {
@@ -197,6 +204,8 @@ public:
     }
 };
 
+export using ScreeningUptr = std::unique_ptr<Screening>;
+export using ScreeningSptr = std::shared_ptr<screening>;
 
 // 座位类
 export class Seat {
@@ -244,6 +253,9 @@ public:
     }
 };
 
+export using SeatUptr = std::unique_ptr<Seat>;
+export using SeatSptr = std::shared_ptr<Seat>;
+
 // 排片座位类
 export class ScreeningSeat {
 public:
@@ -284,6 +296,9 @@ public:
         return std::to_string(rowNum) + "排" + std::to_string(columnNum) + "座";
     }
 };
+
+export using ScreeningSeatUptr = std::unique_ptr<ScreeningSeat>;
+export using ScreeningSeatSptr = std::shared_ptr<ScreeningSeat>;
 
 export class Order {
 public:
@@ -341,6 +356,9 @@ public:
         }
     }
 };
+
+export using OrderUptr = std::unique_ptr<Order>;
+export using OrderSptr = std::shared_ptr<Order>;
 
 export template <typename From, typename To>
 requires ((std::is_enum_v<From> && std::same_as<To, int>) ||

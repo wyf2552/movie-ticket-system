@@ -28,24 +28,26 @@ private:
 public:
     OrderService(Database& database);
 
-    Order* createOrder(int userId, int screeningId, const std::vector<int>& screeningSeatIds);
+    OrderUptr createOrder(int userId, int screeningId, const std::vector<int>& screeningSeatIds);
 
     bool payOrder(int orderId, int payMethod);
 
     bool cancelOrder(int orderId, int userId);
 
-    Order* getOrderById(int orderId);
+    OrderUptr getOrderById(int orderId);
 
-    std::vector<Order*> getOrdersByUserId(int userId);
+    std::vector<OrderUptr> getOrdersByUserId(int userId);
 
-    std::vector<Order*> getAllOrders();
+    std::vector<OrderUptr> getAllOrders();
 
     std::vector<std::pair<std::string, double>> getMovieBoxOffice();
 };
 
+export using OrderServiceSptr = std::shared_ptr<OrderService>;
+
 OrderService::OrderService(Database& database) : _db(database) {}
 
-Order* OrderService::createOrder(int userId, int screeningId, const std::vector<int>& screeningSeatIds) {
+OrderUptr OrderService::createOrder(int userId, int screeningId, const std::vector<int>& screeningSeatIds) {
     try {
         if (screeningSeatIds.empty()) {
             std::cout << "未选择座位!" << std::endl;
@@ -156,7 +158,7 @@ Order* OrderService::createOrder(int userId, int screeningId, const std::vector<
 
         _db.commit();
 
-        Order* order = new Order();
+        auto order = std::make_Uptr<Order>();
         order->orderId = orderId;
         order->orderNo = orderNo;
         order->userId = userId;
@@ -285,7 +287,7 @@ bool OrderService::cancelOrder(int orderId, int userId) {
     }
 }
 
-Order* OrderService::getOrderById(int orderId) {
+OrderUptr OrderService::getOrderById(int orderId) {
     try {
         auto pstmt = _db.prepareStatement("select o.*, u.username, s.start_time as movie_title, c.cinema_name, h.hall_name from orders o join user u on o.user_id = u.user_id join screening s on o.screening_id = s.screening_id join movie m on s.movie_id = m.movie_id join cinema s on s.cinema_id = c.cinema_id join hall h on s.hall_id = h.hall_id where o.order_id = ?");
 
@@ -296,7 +298,7 @@ Order* OrderService::getOrderById(int orderId) {
         auto rs = std::unique_ptr<sql::ResultSet>(pstmt->executeQuery());
 
         if (rs && rs->next()) {
-            Order* order = new Order();
+            auto order = std::make_unique<Order>();
             order->orderId = rs->getInt("order_id");
             order->orderNo = rs->getString("order_no");
             order->userId = rs->getInt("user_id");
@@ -335,8 +337,8 @@ Order* OrderService::getOrderById(int orderId) {
     }
 }
 
-std::vector<Order*> OrderService::getOrdersByUserId(int userId) {
-    std::vector<Order*> orders;
+std::vector<OrderUptr> OrderService::getOrdersByUserId(int userId) {
+    std::vector<OrderUptr> orders;
     try {
         auto pstmt = _db.prepareStatement("select o.*, u.username, s.start_time, m.title as movie_title, c.cinema_name, h.hall_name from orders o join user u on o.user_id = u.user_id join screening s on o.screening_id = s.screening_id join movie m on s.movie_id = m.movie_id join cinema c on s.cinema_id = c.cinema_id join hall h on s.hall_id = h.hall_id where o.user_id = ? order by o.create_time DESC");
         if (!pstmt) {
@@ -348,7 +350,7 @@ std::vector<Order*> OrderService::getOrdersByUserId(int userId) {
 
         if (rs) {
             while (rs->next()) {
-                Order* order = new Order();
+                auto order = std::make_unique<Order>();
                 order->orderId = rs->getInt("order_id");
                 order->orderNo = rs->getString("order_no");
                 order->userId = rs->getInt("user_id");
@@ -370,7 +372,7 @@ std::vector<Order*> OrderService::getOrdersByUserId(int userId) {
             }
         }
 
-        for (Order* order : orders) {
+        for (auto order : orders) {
             pstmt = _db.prepareStatement("select ss.screening_seat_id, s.row_num, s.column_num from orderdetail od join screeningseat_seat_id join seat s on ss.seat_id = ss.seat_id where od.order_id = ?");
             if (pstmt) {
                 pstmt->setInt(1, order->orderId);
@@ -391,14 +393,14 @@ std::vector<Order*> OrderService::getOrdersByUserId(int userId) {
     return orders;
 }
 
-std::vector<Order*> OrderService::getAllOrders() {
-    std::vector<Order*> orders;
+std::vector<OrderUptr> OrderService::getAllOrders() {
+    std::vector<OrderUptr> orders;
     try {
         auto rs = _db.query("select o.*, u.username, s.start_time, as movie_title, c.cinema_name, h.hall_name from orders o join user u on o.user_id = u.user_id join screening s on o.screening_id join cinema c on s.cinema_id = c.cinema_id join hall h on s.hall_id = h.hall_id order by o.create_time DESC");
 
         if (rs) {
             while (rs->next()) {
-                Order* order = new Order();
+                auto order = std::make_unique<Order>();
                 order->orderId = rs->getInt("order_id");
                 order->orderNo = rs->getString("order_no");
                 order->userId = rs->getInt("user_id");

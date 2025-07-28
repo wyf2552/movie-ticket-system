@@ -50,6 +50,8 @@ public:
     int getLastInsertId();
 };
 
+export using DatabaseSptr = std::shared_ptr<Database>;
+
 Database::Database(const std::string& host, const std::string& user,
             const std::string& password, const std::string& database)
     : _host(host), _user(user), _password(password), _database(database), _driver(nullptr)

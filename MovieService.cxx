@@ -26,20 +26,22 @@ public:
 
     bool addMovie(Movie& movie);
 
-    MovieSptr getMovieById(int moveiId);
+    MovieUptr getMovieById(int moveiId);
 
-    std::vector<MovieSptr> getAllMovies();
+    std::vector<MovieUptr> getAllMovies();
 
-    std::vector<MovieSptr> getNowPlayingMovies();
+    std::vector<MovieUptr> getNowPlayingMovies();
 
-    std::vector<MovieSptr> getComingSoonMovies();
+    std::vector<MovieUptr> getComingSoonMovies();
 
     bool updateMovie(const Movie& movie);
 
     bool deleteMovie(int movieId);
 
-    std::vector<Movie*> searchMovies(const std::string& keyword);
+    std::vector<MovieUptr> searchMovies(const std::string& keyword);
 };
+
+export using MovieServiceSptr = std::shared_ptr<MovieService>;
 
 MovieService::MovieService(Database& database) : _db(database) {}
 
@@ -60,7 +62,7 @@ bool MovieService::addMovie(Movie& movie) {
         pstmt->setString(8, movie.country);
         pstmt->setString(9, movie.synopsis);
         pstmt->setString(10, movie.poster);
-        pstmt->setDouble(11, movie. rating);
+        pstmt->setDouble(11, movie.rating);
         pstmt->setInt(12, statusCast<Movie::Status, int>(movie.status));
 
         pstmt->executeUpdate();
@@ -73,7 +75,7 @@ bool MovieService::addMovie(Movie& movie) {
     }
 }
 
-MovieSptr MovieService::getMovieById(int movieId) {
+MovieUptr MovieService::getMovieById(int movieId) {
     try {
         auto pstmt = _db.prepareStatement("select * from Movie where movie_id = ?");
         if (!pstmt) {
@@ -84,7 +86,7 @@ MovieSptr MovieService::getMovieById(int movieId) {
         auto rs = std::unique_ptr<sql::ResultSet>(pstmt->executeQuery());
 
         if (rs && rs->next()) {
-            Movie* movie = new Movie();
+            auto movie = std::make_unique<Movie>();
             movie->movieId = rs->getInt("movie_id");
             movie->title = rs->getString("title");
             movie->director = rs->getString("director");
@@ -108,15 +110,15 @@ MovieSptr MovieService::getMovieById(int movieId) {
     }
 }
 
-std::vector<MovieSptr> MovieService::getAllMovies() {
-    std::vector<MovieSptr> movies;
+std::vector<MovieUptr> MovieService::getAllMovies() {
+    std::vector<MovieUptr> movies;
     try {
         auto rs = _db.query("select * from Movie order by release_date DESC");
 
         if (rs) {
             while (rs->next()) {
                 while (rs->next()) {
-                    Movie* movie = new Movie();
+                    auto movie = std::make_unique<Movie>();
                     movie->movieId = rs->getInt("movie_id");
                     movie->title = rs->getString("title");
                     movie->director = rs->getString("director");
@@ -140,14 +142,14 @@ std::vector<MovieSptr> MovieService::getAllMovies() {
     return movies;
 }
 
-std::vector<MovieSptr> MovieService::getNowPlayingMovies() {
-    std::vector<MovieSptr> movies;
+std::vector<MovieUptr> MovieService::getNowPlayingMovies() {
+    std::vector<MovieUptr> movies;
     try {
         auto rs = _db.query("select * from Movie where status = 1 order by release_date DESC");
 
         if (rs) {
             while (rs->next()) {
-                Movie* movie = new Movie();
+                auto movie = std::make_unique<Movie>();
                 movie->movieId = rs->getInt("movie_id");
                 movie->title = rs->getString("title");
                 movie->director = rs->getString("director");
@@ -170,14 +172,14 @@ std::vector<MovieSptr> MovieService::getNowPlayingMovies() {
     return movies;
 }
 
-std::vector<MovieSptr> MovieService::getComingSoonMovies() {
-    std::vector<MovieSptr> movies;
+std::vector<MovieUptr> MovieService::getComingSoonMovies() {
+    std::vector<MovieUptr> movies;
     try {
         auto rs = _db.query("select * from Movie where status = 2 order by release_date ASC");
 
         if (rs) {
             while (rs->next()) {
-                Movie* movie = new Movie();
+                auto movie = std::make_unique<Movie>();
                 movie->movieId = rs->getInt("movie_id");
                 movie->title = rs->getString("title");
                 movie->director = rs->getString("director");
@@ -256,8 +258,8 @@ bool MovieService::deleteMovie(int movieId) {
     }
 }
 
-std::vector<Movie*> MovieService::searchMovies(const std::string& keyword) {
-    std::vector<Movie*> movies;
+std::vector<MovieUptr> MovieService::searchMovies(const std::string& keyword) {
+    std::vector<MovieUptr> movies;
     try {
         auto pstmt = _db.prepareStatement("select * from movie where title like ? or director like ? or actors like ? order by release_date DESC"
         );
@@ -275,7 +277,7 @@ std::vector<Movie*> MovieService::searchMovies(const std::string& keyword) {
 
         if (rs) {
             while (rs->next()) {
-                Movie* movie = new Movie();
+                auto movie = std::make_unique<Movie>();
                 movie->movieId = rs->getInt("movie_id");
                 movie->title = rs->getString("title");
                 movie->director = rs->getString("director");
@@ -297,3 +299,5 @@ std::vector<Movie*> MovieService::searchMovies(const std::string& keyword) {
     }
     return movies;
 }
+
+

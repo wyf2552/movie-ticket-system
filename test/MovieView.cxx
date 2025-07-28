@@ -22,7 +22,7 @@ int main() {
         auto movieservice = std::make_shared<MovieService>(db);
         auto screeningservice = std::make_shared<ScreeningService>(db);
 
-        MovieView movieview (*movieservice, *screeningservice);
+        MovieView movieview (movieservice, screeningservice);
 
         movieview.browseMovies();
         movieview.showMovieDetails();

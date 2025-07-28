@@ -28,9 +28,9 @@ public:
 
     UserUptr login(const std::string& username, const std::string& password);
 
-    User* getUserById(int UserId);
+    UserUptr getUserById(int UserId);
 
-    std::vector<User*> getAllUsers();
+    std::vector<UserUptr> getAllUsers();
 
     bool updateUser(const User& user);
 
@@ -123,7 +123,7 @@ UserUptr UserService::login(const std::string& username, const std::string& pass
     return nullptr;
 }
 
-User* UserService::getUserById(int userId) {
+UserUptr UserService::getUserById(int userId) {
     try {
         auto pstmt = _db.prepareStatement("select * from User where user_id = ?");
         if (!pstmt) {
@@ -134,7 +134,7 @@ User* UserService::getUserById(int userId) {
         auto rs = std::unique_ptr<sql::ResultSet>(pstmt->executeQuery());
 
         if (rs && rs->next()) {
-            User* user = new User();
+            auto user = std::make_unique<User>();
             user->userId = rs->getInt("user_id");
             user->username = rs->getString("username");
             user->password = rs->getString("password");
@@ -155,14 +155,14 @@ User* UserService::getUserById(int userId) {
     }
 }
 
-std::vector<User*> UserService::getAllUsers() {
-    std::vector<User*> users;
+std::vector<UserUptr> UserService::getAllUsers() {
+    std::vector<UserUptr> users;
     try {
         auto rs = _db.query("select * from User order by user_id");
 
         if (rs) {
             while (rs->next()) {
-                User* user = new User();
+                auto user = std::make_unique<User>();
                 user->userId = rs->getInt("user_id");
                 user->username = rs->getString("username");
                 user->password = rs->getString("password");

@@ -81,10 +81,6 @@ void MovieView::browseMovies() {
 
     displayMovieList(movies);
 
-    for (auto movie : movies) {
-        delete movie;
-    }
-
     ViewHelper::waitForKeyPress();
 }
 
@@ -109,12 +105,40 @@ void MovieView::showMovieDetails() {
     }
 
     ViewHelper::clearScreen();
-    ViewHelper::showMenuTitle("电影详情 - " + movie->getTitle());
+    ViewHelper::showMenuTitle("电影详情 - " + movie->title);
 
     displayMovieDetail(movie);
-    delete movie;
 
     displayScreenings(movieId);
 
     ViewHelper::waitForKeyPress();
 }
+
+void MovieView::searchMovies() {
+    ViewHelper::clearScreen();
+    ViewHelper::showMenuTitle("搜索电影");
+
+    std::string keyword = ViewHelper::readString("请输入搜索关键词:");
+
+    if (keyword.empty()) {
+        ViewHelper::showError("关键词不能为空!");
+        ViewHelper::waitForKeyPress();
+        return;
+    }
+
+    auto movies = _movieService.searchMovies(keyword);
+
+    ViewHelper::clearScreen();
+    ViewHelper::showMenuTitle("搜索结果 - 关键词:" + keyword);
+
+    if (movies.empty()) {
+        ViewHelper::showInfo("没有找到匹配的电影!");
+        ViewHelper::waitForKeyPress();
+        return;
+    }
+
+    displayMovieList(movies);
+
+    ViewHelper::waitForKeyPress();
+}
+
