@@ -14,6 +14,9 @@ module;
 
 export module database;
 
+using StmtUptr = std::unique_ptr<sql::Statement>;
+using PrepStmtUptr = std::unique_ptr<sql::PreparedStatement>;
+
 export class Database {
 private:
     std::string _host;
@@ -39,7 +42,7 @@ public:
 
     std::unique_ptr<sql::ResultSet> query(const std::string& query);
 
-    std::unique_ptr<sql::PreparedStatement>prepareStatement(const std::string& query);
+    PrepStmtUptr prepareStatement(const std::string& query);
 
     void beginTransaction();
 
@@ -85,7 +88,7 @@ void Database::disconnect() {
 
 bool Database::execute(const std::string& query) {
     try {
-        std::unique_ptr<sql::Statement> stmt(_conn->createStatement());
+        StmtUptr stmt(_conn->createStatement());
         return stmt->execute(query);
     } catch (sql::SQLException &e) {
         std::cerr << "SQL Execute Error: " << e.what() << std::endl;
@@ -96,7 +99,7 @@ bool Database::execute(const std::string& query) {
 
 std::unique_ptr<sql::ResultSet> Database::query(const std::string& query) {
     try {
-        std::unique_ptr<sql::Statement> stmt(_conn->createStatement());
+        StmtUptr stmt(_conn->createStatement());
         return std::unique_ptr<sql::ResultSet>(stmt->executeQuery(query));
     } catch (sql::SQLException &e) {
         std::cerr << "SQL Query Error: " << e.what() << std::endl;
@@ -105,9 +108,9 @@ std::unique_ptr<sql::ResultSet> Database::query(const std::string& query) {
     }
 }
 
-std::unique_ptr<sql::PreparedStatement> Database::prepareStatement(const std::string& query) {
+PrepStmtUptr Database::prepareStatement(const std::string& query) {
     try {
-        return std::unique_ptr<sql::PreparedStatement>(_conn->prepareStatement(query));
+        return PrepStmtUptr(_conn->prepareStatement(query));
     } catch (sql::SQLException &e) {
         std::cerr << "Prepare Statement Error: " << e.what() << std::endl;
         std::cerr << "MySQL Error Code: " << e.getErrorCode() << std::endl;
