@@ -142,3 +142,59 @@ void MovieView::searchMovies() {
     ViewHelper::waitForKeyPress();
 }
 
+void MovieView::showMovieManagement() {
+    while(true) {
+        ViewHelper::clearScreen();
+        ViewHelper::showMenuTitle("电影管理");
+
+        std::cout << "1.添加电影" << std::endl;
+        std::cout << "2.修改电影" << std::endl;
+        std::cout << "3.删除电影" << std::endl;
+        std::cout << "4.查看所有电影" << std::endl;
+        std::cout << "0.返回" << std::endl;
+
+        int choice = ViewHelper::readInt("\n请选择: ");
+
+        switch(choice) {
+            case 1:
+                addMovie();
+                break;
+            case 2:
+                modifyMovie();
+                break;
+            case 3:
+                deleteMovie();
+                break;
+            case 4:
+                viewAllMovies();
+                break;
+
+            case 0:
+                return;
+            default:
+                ViewHelper::showError("无效的选择!");
+                ViewHelper::waitForKeyPress();
+                break;
+        }
+    }
+}
+
+void MovieView::displayMovieList(const std::vector<MovieUptr>& movies) {
+    std::cout << std::left << std::setw(5) << "ID" << "|"
+              << std::setw(30) << "电影名称" << "|"
+              << std::setw(10) << "类型" << "|"
+              << std::setw(10) << "时长(分钟)" << "|"
+              << std::setw(15) << "上映日期" << "|"
+              << std::setw(10) << "状态" << std::endl;
+    ViewHelper::showSeparator();
+
+    for (const auto& movie : movies) {
+        std::cout << std::left << std::setw(5) << movie->getMovieId() << "|"
+                  << std::setw(30) << movie->getTitle() << "|"
+                  << std::setw(10) << movie->getMovieType() << "|"
+                  << std::setw(10) << movie->getDuration() << "|"
+                  << std::setw(15) << movie->getReleaseDate() << "|"
+                  << std::setw(10) << movie->getStatusDescription() << std::endl;
+    }
+    ViewHelper::showSeparator();
+}

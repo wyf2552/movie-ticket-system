@@ -27,9 +27,9 @@ public:
 
     bool addCinema(Cinema& cinema);
 
-    Cinema* getCinemaById(int cinemaId);
+    CinemaUptr getCinemaById(int cinemaId);
 
-    std::vector<Cinema*> getAllCinema();
+    std::vector<CinemaUptr> getAllCinema();
 
     bool updateCinema(const Cinema& cinema);
 
@@ -37,9 +37,9 @@ public:
 
     bool addHall(Hall& hall);
 
-    Hall* getHallById(int hallId);
+    HallUptr getHallById(int hallId);
 
-    std::vector<Hall*> getHallsByCinemaId(int cinemaId);
+    std::vector<HallUptr> getHallsByCinemaId(int cinemaId);
 
     bool updateHall(const Hall& hall);
 
@@ -47,10 +47,12 @@ public:
 
     bool addSeats(int hallId, int rows, int columns);
 
-    std:: vector<Seat*> getSeatsByHallId(int hallId);
+    std:: vector<SeatUptr> getSeatsByHallId(int hallId);
 
     bool updateSeat(const Seat& seat);
 };
+
+export using CinemaServiceSptr = std::shared_ptr<CinemaService>;
 
 CinemaService::CinemaService(Database& database) : _db(database) {}
 
@@ -80,7 +82,7 @@ bool CinemaService::addCinema(Cinema& cinema) {
     }
 }
 
-Cinema* CinemaService::getCinemaById(int cinemaId) {
+CinemaUptr CinemaService::getCinemaById(int cinemaId) {
     try {
         auto pstmt = _db.prepareStatement("select * from cinema where cinema_id = ?");
             if (!pstmt) {
@@ -90,7 +92,7 @@ Cinema* CinemaService::getCinemaById(int cinemaId) {
             auto rs = std::unique_ptr<sql::ResultSet>(pstmt->executeQuery());
 
             if (rs && rs->next()) {
-                Cinema* cinema = new Cinema();
+                auto cinema = std::make_unique<Cinema>();
                 cinema->cinemaId = rs->getInt("cinema_id");
                 cinema->cinemaName = rs->getString("cinema_name");
                 cinema->address = rs->getString("address");
@@ -106,21 +108,21 @@ Cinema* CinemaService::getCinemaById(int cinemaId) {
     }
 }
 
-std::vector<Cinema*> CinemaService::getAllCinema() {
-    std::vector<Cinema*> cinemas;
+std::vector<CinemaUptr> CinemaService::getAllCinema() {
+    std::vector<CinemaUptr> cinemas;
     try {
         auto rs = _db.query("select * from cinema order by cinema_id");
 
         if (rs) {
             while (rs->next()) {
-                Cinema* cinema = new Cinema();
+                auto cinema = std::make_unique<Cinema>();
                 cinema->cinemaId = rs->getInt("cinema_id");
                 cinema->cinemaName = rs->getString("cinema_name");
                 cinema->address = rs->getString("address");
                 cinema->phone = rs->getString("phone");
                 cinema->introduction = rs->getString("introduction");
                 cinema->status = statusCast<int, Cinema::Status>(rs->getInt("status"));
-                cinemas.push_back(cinema);
+                cinemas.push_back(std::move(cinema));
             }
         }
     } catch (sql::SQLException &e) {
@@ -202,7 +204,7 @@ bool CinemaService::addHall(Hall& hall) {
     }
 }
 
-Hall* CinemaService::getHallById(int hallId) {
+HallUptr CinemaService::getHallById(int hallId) {
     try {
         auto pstmt = _db.prepareStatement("select * from hall where hall_id = ?");
         if (!pstmt) {
@@ -213,7 +215,7 @@ Hall* CinemaService::getHallById(int hallId) {
         auto rs = std::unique_ptr<sql::ResultSet>(pstmt->executeQuery());
 
         if (rs && rs->next()) {
-            Hall* hall = new Hall();
+            auto hall = std::make_unique<Hall>();
             hall->hallId = rs->getInt("hall_id");
             hall->cinemaId = rs->getInt("cinema_id");
             hall->hallName = rs->getString("hall_name");
@@ -229,8 +231,8 @@ Hall* CinemaService::getHallById(int hallId) {
     }
 }
 
-std::vector<Hall*> CinemaService::getHallsByCinemaId(int cinemaId) {
-    std::vector<Hall*> halls;
+std::vector<HallUptr> CinemaService::getHallsByCinemaId(int cinemaId) {
+    std::vector<HallUptr> halls;
     try {
         auto pstmt = _db.prepareStatement("select * from hall where cinema_id = ? order by hall_id");
         if (!pstmt) {
@@ -242,14 +244,14 @@ std::vector<Hall*> CinemaService::getHallsByCinemaId(int cinemaId) {
 
         if (rs) {
             while (rs->next()) {
-                Hall* hall = new Hall();
+                auto hall = std::make_unique<Hall>();
                 hall->hallId = rs->getInt("hall_id");
                 hall->cinemaId = rs->getInt("cinema_id");
                 hall->hallName = rs->getString("hall_name");
                 hall->seatCount = rs->getInt("seat_string");
                 hall->hallType = rs->getString("hall_type");
                 hall->status = statusCast<int, Hall::Status>(rs->getInt("status"));
-                halls.push_back(hall);
+                halls.push_back(std::move(hall));
             }
         }
     } catch (sql::SQLException &e) {
@@ -347,8 +349,8 @@ bool CinemaService::addSeats(int hallId, int rows, int columns) {
     }
 }
 
-std::vector<Seat*> CinemaService::getSeatsByHallId(int hallId) {
-    std::vector<Seat*> seats;
+std::vector<SeatUptr> CinemaService::getSeatsByHallId(int hallId) {
+    std::vector<SeatUptr> seats;
     try {
         auto pstmt = _db.prepareStatement("select * from seat where hall_id = ? order by row_num, column_num");
 
@@ -361,14 +363,14 @@ std::vector<Seat*> CinemaService::getSeatsByHallId(int hallId) {
 
         if (rs) {
             while (rs->next()) {
-                Seat* seat = new Seat();
+                auto seat = std::make_unique<Seat>();
                 seat->seatId = rs->getInt("seat_id");
                 seat->hallId = rs->getInt("hall_id");
                 seat->rowNum = rs->getInt("row_num");
                 seat->columnNum = rs->getInt("column_num");
                 seat->seatType = statusCast<int, Seat::SeatType>(rs->getInt("seat_type"));
                 seat->status = statusCast<int, Seat::Status>(rs->getInt("status"));
-                seats.push_back(seat);
+                seats.push_back(std::move(seat));
             }
         }
     } catch (sql::SQLException &e) {

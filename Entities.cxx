@@ -162,8 +162,8 @@ public:
     }
 };
 
-export using CinemaUptr = std::unique_ptr<Cinema>;
-export using CinemaSptr = std::shared_ptr<Cinema>;
+export using HallUptr = std::unique_ptr<Hall>;
+export using HallSptr = std::shared_ptr<Hall>;
 
 // 排片类
 export class Screening {
@@ -205,7 +205,7 @@ public:
 };
 
 export using ScreeningUptr = std::unique_ptr<Screening>;
-export using ScreeningSptr = std::shared_ptr<screening>;
+export using ScreeningSptr = std::shared_ptr<Screening>;
 
 // 座位类
 export class Seat {

@@ -132,7 +132,7 @@ std::vector<MovieUptr> MovieService::getAllMovies() {
                     movie->poster = rs->getString("poster");
                     movie->rating = rs->getDouble("rating");
                     movie->status = statusCast<int, Movie::Status>(rs->getInt("status"));
-                    movies.push_back(movie);
+                    movies.push_back(std::move(movie));
                 }
             }
         }
@@ -163,7 +163,7 @@ std::vector<MovieUptr> MovieService::getNowPlayingMovies() {
                 movie->poster = rs->getString("poster");
                 movie->rating = rs->getDouble("rating");
                 movie->status = statusCast<int, Movie::Status>(rs->getInt("status"));
-                movies.push_back(movie);
+                movies.push_back(std::move(movie));
             }
         }
     } catch (sql::SQLException &e) {
@@ -193,7 +193,7 @@ std::vector<MovieUptr> MovieService::getComingSoonMovies() {
                 movie->poster = rs->getString("poster");
                 movie->rating = rs->getDouble("rating");
                 movie->status = statusCast<int, Movie::Status>(rs->getInt("status"));
-                movies.push_back(movie);
+                movies.push_back(std::move(movie));
             }
         }
     } catch (sql::SQLException &e) {
@@ -291,7 +291,7 @@ std::vector<MovieUptr> MovieService::searchMovies(const std::string& keyword) {
                 movie->poster = rs->getString("poster");
                 movie->rating = rs->getDouble("rating");
                 movie->status = statusCast<int, Movie::Status>(rs->getInt("status"));
-                movies.push_back(movie);
+                movies.push_back(std::move(movie));
             }
         }
     } catch (sql::SQLException &e) {

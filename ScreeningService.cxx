@@ -5,6 +5,9 @@ module;
 #include <string>
 #include <memory>
 #include <iostream>
+#include <vector>
+#include <memory>
+#include <algorithm>
 #include <mysql_connection.h>
 #include <cppconn/driver.h>
 #include <cppconn/exception.h>
@@ -127,7 +130,7 @@ ScreeningUptr ScreeningService::getScreeningById(int screeningId) {
 std::vector<ScreeningUptr> ScreeningService::getScreeningsByMovieId(int movieId) {
     std::vector<ScreeningUptr> screenings;
     try {
-        auto pstmt = _db.prepareStatement("select s.*, m.title as movie_title, c.cinema_name, h.hall_name form screening s join movie m on s.movie_id = m.movie_id join cinema c on s.cinema_id = c.cinema_id join hall h on s.hall_id = h.hall_id where s.movie_id = ? and s.start_time >= now() order by s.start_time");
+        auto pstmt = _db.prepareStatement("select s.*, m.title as movie_title, c.cinema_name, h.hall_name from screening s join movie m on s.movie_id = m.movie_id join cinema c on s.cinema_id = c.cinema_id join hall h on s.hall_id = h.hall_id where s.movie_id = ? and s.start_time >= now() order by s.start_time");
 
         if (!pstmt) {
             return screenings;
@@ -153,7 +156,7 @@ std::vector<ScreeningUptr> ScreeningService::getScreeningsByMovieId(int movieId)
                 screening->cinemaName = rs->getString("cinema_name");
                 screening->hallName = rs->getString("hall_name");
 
-                screenings.push_back(screening);
+                screenings.push_back(std::move(screening));
             }
         }
     } catch (sql::SQLException &e) {
@@ -165,7 +168,7 @@ std::vector<ScreeningUptr> ScreeningService::getScreeningsByMovieId(int movieId)
 std::vector<ScreeningUptr> ScreeningService::getScreeningsByCinemaId(int cinemaId) {
     std::vector<ScreeningUptr> screenings;
     try {
-        auto pstmt = _db.prepareStatement("select s.*, m.title as movie_title, c.cinema_name, h.hall_name from screening s join movie m on s.movie_id = m.movie_id join cinema c on s.cinema_id = c.cinema_id join hall h on s.hall_id = h.hall_id where s cinema_id = ? and s.start_time >= now() order by s.start_time");
+        auto pstmt = _db.prepareStatement("select s.*, m.title as movie_title, c.cinema_name, h.hall_name from screening s join movie m on s.movie_id = m.movie_id join cinema c on s.cinema_id = c.cinema_id join hall h on s.hall_id = h.hall_id where s.cinema_id = ? and s.start_time >= now() order by s.start_time");
 
         if (!pstmt) {
             return screenings;
@@ -191,7 +194,7 @@ std::vector<ScreeningUptr> ScreeningService::getScreeningsByCinemaId(int cinemaI
                 screening->cinemaName = rs->getString("cinema_name");
                 screening->hallName = rs->getString("hall_name");
 
-                screenings.push_back(screening);
+                screenings.push_back(std::move(screening));
             }
         }
     } catch (sql::SQLException &e) {
@@ -203,7 +206,7 @@ std::vector<ScreeningUptr> ScreeningService::getScreeningsByCinemaId(int cinemaI
 std::vector<ScreeningSeatUptr> ScreeningService::getScreeningSeats(int screeningId) {
     std::vector<ScreeningSeatUptr> seats;
     try {
-        auto pstmt = _db.prepareStatement("select ss.*, s.row_num, s.column_num from screeningseat ss join seat s on ss.seat_id = s.seat_id where ss.screening_id = ? order by s.row_num, s.cloumn_num");
+        auto pstmt = _db.prepareStatement("select ss.*, s.row_num, s.column_num from screeningseat ss join seat s on ss.seat_id = s.seat_id where ss.screening_id = ? order by s.row_num, s.column_num");
 
         if (!pstmt) {
             return seats;
@@ -222,8 +225,8 @@ std::vector<ScreeningSeatUptr> ScreeningService::getScreeningSeats(int screening
                 seat->lockTime = rs->getString("lock_time");
                 seat->lockUserId = rs->getInt("lock_user_id");
                 seat->rowNum = rs->getInt("row_num");
-                seat->columnNum = rs->getInt("cloumn_num");
-                seats.push_back(seat);
+                seat->columnNum = rs->getInt("column_num");
+                seats.push_back(std::move(seat));
             }
         }
     } catch (sql::SQLException &e) {
@@ -234,7 +237,7 @@ std::vector<ScreeningSeatUptr> ScreeningService::getScreeningSeats(int screening
 
 bool ScreeningService::updateScreening(const Screening& screening) {
     try {
-        auto pstmt = _db.prepareStatement("uspdate screening set movie_id = ?, cinema_id = ?, hall_id = ?, start_time = ?, end_time = ?, price = ?, language_version = ?, status = ? where screening_id = ?");
+        auto pstmt = _db.prepareStatement("update screening set movie_id = ?, cinema_id = ?, hall_id = ?, start_time = ?, end_time = ?, price = ?, language_version = ?, status = ? where screening_id = ?");
 
         if (!pstmt) {
             return false;
@@ -249,6 +252,8 @@ bool ScreeningService::updateScreening(const Screening& screening) {
         pstmt->setString(7, screening.languageVersion);
         pstmt->setInt(8, statusCast<Screening::Status, int>(screening.status));
         pstmt->setInt(9, screening.screeningId);
+
+        return pstmt->executeUpdate() > 0;
     } catch (sql::SQLException &e) {
         std::cerr << "Update Screening Error: " << e.what() << std::endl;
         return false;
@@ -341,7 +346,7 @@ bool ScreeningService::unlockSeat(int screeningSeatId, int userId) {
 
 void ScreeningService::releaseTimeoutSeats() {
     try {
-        _db.execute("update screeningseat status = 0, lock_time = NULL, lock_user_id = NULL where status = 2 and lock_time < date_sub(now(), interval 15 minute)");
+        _db.execute("update screeningseat set status = 0, lock_time = NULL, lock_user_id = NULL where status = 2 and lock_time < date_sub(now(), interval 15 minute)");
     }  catch (sql::SQLException &e) {
         std::cerr << "Unlock Seat Error: " << e.what() << std::endl;
     }

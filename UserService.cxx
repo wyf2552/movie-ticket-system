@@ -174,7 +174,7 @@ std::vector<UserUptr> UserService::getAllUsers() {
                 user->lastLogin = rs->getString("last_login");
                 user->userStatus = rs->getInt("user_status");
                 user->userType = rs->getInt("user_type");
-                users.push_back(user);
+                users.push_back(std::move(user));
             }
         }
     } catch (sql::SQLException &e) {

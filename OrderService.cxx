@@ -368,7 +368,7 @@ std::vector<OrderUptr> OrderService::getOrdersByUserId(int userId) {
                 order->hallName = rs->getString("hall_name");
                 order->startTime = rs->getString("start_time");
 
-                orders.push_back(order);
+                orders.push_back(std::move(order));
             }
         }
 
@@ -415,7 +415,7 @@ std::vector<OrderUptr> OrderService::getAllOrders() {
                 order->cinemaName = rs->getString("cinema_name");
                 order->hallName = rs->getString("hall_name");
                 order->startTime = rs->getString("start_time");
-                orders.push_back(order);
+                orders.push_back(std::move(order));
             }
         }
     } catch (sql::SQLException &e) {

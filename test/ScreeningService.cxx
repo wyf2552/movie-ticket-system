@@ -1,3 +1,6 @@
+#include <iostream>
+#include <cppconn/resultset.h>
+
 import database;
 import entities;
 import userservice;
@@ -5,8 +8,6 @@ import movieservice;
 import cinemaservice;
 import screeningservice;
 
-#include <iostream>
-#include <cppconn/resultset.h>
 
 int main() {
     Database db("tcp://localhost:3306", "root", "123456wyf", "");
@@ -14,13 +15,13 @@ int main() {
     if (db.connect()) {
         db.execute("create database if not exists moviesystem");
         db.setSchema("moviesystem");
-        db.execute("create table if not exists user(user_id varchar(20), username varchar(20), password varchar(20), real_name varchar(20), gender varchar(5), phone varchar(11), email varchar(20), reg_time date, last_login date, user_status int, user_type varchar(20))");
-        db.execute("create table if not exists movie(movie_id varchar(20), title varchar(100), director varchar(50), actors varchar(200), movie_type varchar(50), duration int, release_date date, language varchar(30), country varchar(50), synopsis text, poster varchar(225), rating decimal(3, 1), status int)");
-        db.execute("create table if not exists screening(screening_id varchar(20), movie_id varchar(20), cinema_id varchar(20), hall_id varchar(20), start_time date, end_time date, price decimal(5,2), language_version varchar(20),  status int)");
+        db.execute("create table if not exists user(user_id int, username varchar(20), password varchar(20), real_name varchar(20), gender varchar(5), phone varchar(11), email varchar(20), reg_time date, last_login date, user_status int, user_type varchar(20))");
+        db.execute("create table if not exists movie(movie_id int, title varchar(100), director varchar(50), actors varchar(200), movie_type varchar(50), duration int, release_date date, language varchar(30), country varchar(50), synopsis text, poster varchar(225), rating decimal(3, 1), status int)");
+        db.execute("create table if not exists screening(screening_id int, movie_id int, cinema_id int, hall_id int, start_time date, end_time date, price decimal(5,2), language_version varchar(20),  status int)");
         db.execute("create table if not exists cinema(cinema_id int, cinema_name varchar(20), address varchar(20), phone varchar(20), introduction text, status int)");
         db.execute("create table if not exists hall(hall_id int, cinema_id int, hall_name varchar(20), seat_count int, hall_type varchar(20), status int)");
         db.execute("create table if not exists seat(seat_id int, hall_id int, row_num int, column_num int, seat_type int, status int)");
-        db.execute("create table if not exists screening(screening_id int, movie_id int, cinema_id int, hall_id int, start_time date, end_time, date, price decimal(4, 2), language_version varchar(20), status int, movie_title varchar(20), cinema_name varchar(20), hall_name varchar(20))");
+        db.execute("create table if not exists screening(screening_id int, movie_id int, cinema_id int, hall_id int, start_time date, end_time date, price decimal(4, 2), language_version varchar(20), status int, movie_title varchar(20), cinema_name varchar(20), hall_name varchar(20))");
         db.execute("create table if not exists screeningseat(screening_seat_id int, screening_id int, seat_id int, status int, lock_time date, lock_user_id int, row_num int, column_num int)");
 
         Movie movie(1, "盗梦空间", "克里斯托弗·诺兰",
@@ -40,18 +41,18 @@ int main() {
 
         Seat seat(1, 1, 10, 10, Seat::SeatType::normal, Seat::Status::normal);
 
-        Screening screening(1, 1, 1, 1, 2024-12-12, 2025-01-12, 34.52, "简体中文", Screening::Status::normal, "灵笼", "万达影业", "1号厅");
-        ScreeningSeat screeningseat(1, 1, 1, ScreeningSeat::Status::sold, 2024-12-12, 1, 12, 12);
+        Screening screening(1, 1, 1, 1, "2024-12-12", "2025-01-12", 34.52, "简体中文", Screening::Status::normal);
+        ScreeningSeat screeningseat(1, 1, 1, ScreeningSeat::Status::sold, "2024-12-12", 1);
         ScreeningService screeningservice(db);
         screeningservice.addScreening(screening);
         screeningservice.getScreeningById(1);
         screeningservice.getScreeningsByMovieId(1);
         screeningservice.getScreeningsByCinemaId(1);
         screeningservice.getScreeningSeats(1);
-        screeningservice.updateScreening(1);
+        screeningservice.updateScreening(screening);
         screeningservice.deleteScreening(1);
         screeningservice.lockSeat(1, 1);
-        screeningservice.unlock(1, 1);
+        screeningservice.unlockSeat(1, 1);
         screeningservice.releaseTimeoutSeats();
     }
 
