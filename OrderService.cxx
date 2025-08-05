@@ -54,7 +54,7 @@ OrderUptr OrderService::createOrder(int userId, int screeningId, const std::vect
             return nullptr;
         }
 
-        auto pstmt = _db.prepareStatement("select s.*, m.title as movie_title, c.cinema_name, h.hall_name from screening s join movie m on s.movie_id = m.movie_id join cinema c on s.cinema = c.cinema_id join hall h on s.hall_id = h.hall_id where s.screening_id = ?");
+        auto pstmt = _db.prepareStatement("select s.*, m.title as movie_title, c.cinema_name, h.hall_name from screening s join movie m on s.movie_id = m.movie_id join cinema c on s.cinema_id = c.cinema_id join hall h on s.hall_id = h.hall_id where s.screening_id = ?");
 
         if (!pstmt) {
             return nullptr;
@@ -126,7 +126,7 @@ OrderUptr OrderService::createOrder(int userId, int screeningId, const std::vect
         std::vector<std::string> seatPositions;
 
         for (int seatId : screeningSeatIds) {
-            pstmt = _db.prepareStatement("select ss.*, s.row_num, s.column_num from screeningseat ss join seat s on ss.seat_id = s.seat_id where ss,screening_seat_id = ?");
+            pstmt = _db.prepareStatement("select ss.*, st.row_num, st.column_num from screeningseat ss join seat st on ss.seat_id = st.seat_id where ss.screening_seat_id = ?");
 
             if (!pstmt) {
                 _db.rollback();
@@ -158,7 +158,7 @@ OrderUptr OrderService::createOrder(int userId, int screeningId, const std::vect
 
         _db.commit();
 
-        auto order = std::make_Uptr<Order>();
+        auto order = std::make_unique<Order>();
         order->orderId = orderId;
         order->orderNo = orderNo;
         order->userId = userId;
@@ -248,7 +248,7 @@ bool OrderService::cancelOrder(int orderId, int userId) {
             return false;
         }
 
-        int status = rs->getInt("status");
+        // int status = rs->getInt("order_status");
         int orderUserId = rs->getInt("user_id");
 
         if (orderUserId != userId) {
@@ -289,7 +289,7 @@ bool OrderService::cancelOrder(int orderId, int userId) {
 
 OrderUptr OrderService::getOrderById(int orderId) {
     try {
-        auto pstmt = _db.prepareStatement("select o.*, u.username, s.start_time as movie_title, c.cinema_name, h.hall_name from orders o join user u on o.user_id = u.user_id join screening s on o.screening_id = s.screening_id join movie m on s.movie_id = m.movie_id join cinema s on s.cinema_id = c.cinema_id join hall h on s.hall_id = h.hall_id where o.order_id = ?");
+        auto pstmt = _db.prepareStatement("select o.*, u.username, m.title as movie_title, c.cinema_name, h.hall_name, s.start_time from orders o join user u on o.user_id = u.user_id join screening s on o.screening_id = s.screening_id join movie m on s.movie_id = m.movie_id join cinema c on s.cinema_id = c.cinema_id join hall h on s.hall_id = h.hall_id where o.order_id = ?");
 
         if (!pstmt) {
             return nullptr;
@@ -372,7 +372,7 @@ std::vector<OrderUptr> OrderService::getOrdersByUserId(int userId) {
             }
         }
 
-        for (auto order : orders) {
+        for (const auto& order : orders) {
             pstmt = _db.prepareStatement("select ss.screening_seat_id, s.row_num, s.column_num from orderdetail od join screeningseat_seat_id join seat s on ss.seat_id = ss.seat_id where od.order_id = ?");
             if (pstmt) {
                 pstmt->setInt(1, order->orderId);
@@ -396,7 +396,7 @@ std::vector<OrderUptr> OrderService::getOrdersByUserId(int userId) {
 std::vector<OrderUptr> OrderService::getAllOrders() {
     std::vector<OrderUptr> orders;
     try {
-        auto rs = _db.query("select o.*, u.username, s.start_time, as movie_title, c.cinema_name, h.hall_name from orders o join user u on o.user_id = u.user_id join screening s on o.screening_id join cinema c on s.cinema_id = c.cinema_id join hall h on s.hall_id = h.hall_id order by o.create_time DESC");
+        auto rs = _db.query("SELECT o.*, u.username, s.start_time, m.title as movie_title, c.cinema_name, h.hall_name FROM orders o JOIN user u ON o.user_id = u.user_id JOIN screening s ON o.screening_id = s.screening_id JOIN movie m ON s.movie_id = m.movie_id JOIN cinema c ON s.cinema_id = c.cinema_id JOIN hall h ON s.hall_id = h.hall_id ORDER BY o.create_time DESC");
 
         if (rs) {
             while (rs->next()) {
@@ -427,7 +427,7 @@ std::vector<OrderUptr> OrderService::getAllOrders() {
 std::vector<std::pair<std::string, double>> OrderService::getMovieBoxOffice() {
     std::vector<std::pair<std::string, double>> results;
     try {
-        auto rs = _db.query("select m.title, sum(o.total_amount) as box_office from orders o join screening s on o.screening_id = s.screening_id join movie m on s.movie_id = m.movie_id where o.order_status = 1 group by m.movie_id order by box_office DESC");
+        auto rs = _db.query("SELECT m.title, SUM(o.total_amount) AS box_office FROM orders o JOIN screening s ON o.screening_id = s.screening_id JOIN movie m ON s.movie_id = m.movie_id WHERE o.order_status = 1 GROUP BY m.movie_id, m.title ORDER BY box_office DESC");
 
         if (rs) {
             while (rs->next()) {

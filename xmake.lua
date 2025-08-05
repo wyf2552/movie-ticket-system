@@ -94,6 +94,12 @@ target("orderservice")
         "test/OrderService.cxx"
     )
 
+target("viewhelper")
+    set_kind("binary")
+    add_files(
+        "view/ViewHelper.cxx"
+    )
+
 target("authview")
     set_kind("binary")
     add_files(

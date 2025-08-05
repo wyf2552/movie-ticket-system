@@ -198,3 +198,48 @@ void MovieView::displayMovieList(const std::vector<MovieUptr>& movies) {
     }
     ViewHelper::showSeparator();
 }
+
+void MovieView::displayMovieDetail(const Movie& movie) {
+    std::cout << "电影ID: " << movie.movieId << std::endl;
+    std::cout << "电影名称: " << movie.title << std::endl;
+    std::cout << "导演: " << movie.director << std::endl;
+    std::cout << "主演: " << movie.actors << std::endl;
+    std::cout << "类型: " << movie.movieType << std::endl;
+    std::cout << "时长: " << movie.duration << " 分钟" << std::endl;
+    std::cout << "上映日期: " << movie.releaseDate << std::endl;
+    std::cout << "语言: " << movie.language << std::endl;
+    std::cout << "国家/地区: " << movie.country << std::endl;
+    std::cout << "评分: " << movie.rating << std::endl;
+    std::cout << "状态: " << movie.statusDescription << std::endl;
+    ViewHelper::showSeparator();
+    std::cout << "剧情简介: " << std::endl << movie.synopsis() << std::endl;
+}
+
+void MovieView::displayScreenings(int movieId) {
+    ViewHelper::showSeparator();
+    std::cout << "排片信息: " << std::endl;
+
+    auto screenings = screeningService.getScreeningsByMovieId(movieId);
+
+    if (screenings.empty()) {
+        std::cout << "暂无排片信息!" << std::endl;
+    } else {
+        std::cout << std::left << std::setw(5) << "ID" << "|"
+                  << std::setw(20) << "影院" << "|"
+                  << std::setw(10) << "影厅" << "|"
+                  << std::setw(20) << "放映时间" << "|"
+                  << std::setw(10) << "票价" << "|"
+                  << std::setw(10) << "语言版本" << std::endl;
+
+        ViewHelper::showSeparator();
+
+        for (const auto& screening : screenings) {
+            std::cout << std::left << std::setw(5) << screening->getScreeningId() << "|"
+                      << std::setw(20) << screening->getCinemaName() << "|"
+                      << std::setw(10) << screening->getHallName() << "|"
+                      << std::setw(20) << screening->getStartTime() << "|"
+                      << std::setw(10) << screening->getPrice() << "|"
+                      << std::setw(10) << screening->getLanguageVersion() << std::endl;
+        }
+    }
+}
