@@ -5,6 +5,7 @@ module;
 #include <string>
 #include <memory>
 #include <iostream>
+#include <iomanip>
 
 import entities;
 import viewhelper;
@@ -23,8 +24,8 @@ private:
     void modifyMovie();
     void deleteMovie();
     void viewAllMovies();
-    void displayMovieList(const std::vector<MovieSptr>& movies);
-    void displayMovieDetail(const MovieSptr& movie);
+    void displayMovieList(const std::vector<MovieUptr>& movies);
+    void displayMovieDetail(const MovieUptr& movie);
     void displayScreenings(int movieId);
 
 public:
@@ -49,7 +50,7 @@ void MovieView::browseMovies() {
 
     int choice = ViewHelper::readInt("\n请选择:");
 
-    std::vector<MovieSptr> movies;
+    std::vector<MovieUptr> movies;
 
     switch(choice) {
         case 1:
@@ -189,37 +190,37 @@ void MovieView::displayMovieList(const std::vector<MovieUptr>& movies) {
     ViewHelper::showSeparator();
 
     for (const auto& movie : movies) {
-        std::cout << std::left << std::setw(5) << movie->getMovieId() << "|"
-                  << std::setw(30) << movie->getTitle() << "|"
-                  << std::setw(10) << movie->getMovieType() << "|"
-                  << std::setw(10) << movie->getDuration() << "|"
-                  << std::setw(15) << movie->getReleaseDate() << "|"
-                  << std::setw(10) << movie->getStatusDescription() << std::endl;
+        std::cout << std::left << std::setw(5) << movie->movieId << "|"
+                  << std::setw(30) << movie->title << "|"
+                  << std::setw(10) << movie->movieType << "|"
+                  << std::setw(10) << movie->duration << "|"
+                  << std::setw(15) << movie->releaseDate << "|"
+                  << std::setw(10) << static_cast<int>(movie->status)  << std::endl;
     }
     ViewHelper::showSeparator();
 }
 
-void MovieView::displayMovieDetail(const Movie& movie) {
-    std::cout << "电影ID: " << movie.movieId << std::endl;
-    std::cout << "电影名称: " << movie.title << std::endl;
-    std::cout << "导演: " << movie.director << std::endl;
-    std::cout << "主演: " << movie.actors << std::endl;
-    std::cout << "类型: " << movie.movieType << std::endl;
-    std::cout << "时长: " << movie.duration << " 分钟" << std::endl;
-    std::cout << "上映日期: " << movie.releaseDate << std::endl;
-    std::cout << "语言: " << movie.language << std::endl;
-    std::cout << "国家/地区: " << movie.country << std::endl;
-    std::cout << "评分: " << movie.rating << std::endl;
-    std::cout << "状态: " << movie.statusDescription << std::endl;
+void MovieView::displayMovieDetail(const MovieUptr& movie) {
+    std::cout << "电影ID: " << movie->movieId << std::endl;
+    std::cout << "电影名称: " << movie->title << std::endl;
+    std::cout << "导演: " << movie->director << std::endl;
+    std::cout << "主演: " << movie->actors << std::endl;
+    std::cout << "类型: " << movie->movieType << std::endl;
+    std::cout << "时长: " << movie->duration << " 分钟" << std::endl;
+    std::cout << "上映日期: " << movie->releaseDate << std::endl;
+    std::cout << "语言: " << movie->language << std::endl;
+    std::cout << "国家/地区: " << movie->country << std::endl;
+    std::cout << "评分: " << movie->rating << std::endl;
+    std::cout << "状态: " << static_cast<int>(movie->status) << std::endl;
     ViewHelper::showSeparator();
-    std::cout << "剧情简介: " << std::endl << movie.synopsis() << std::endl;
+    std::cout << "剧情简介: " << std::endl << movie->synopsis << std::endl;
 }
 
 void MovieView::displayScreenings(int movieId) {
     ViewHelper::showSeparator();
     std::cout << "排片信息: " << std::endl;
 
-    auto screenings = screeningService.getScreeningsByMovieId(movieId);
+    auto screenings = _screeningService.getScreeningsByMovieId(movieId);
 
     if (screenings.empty()) {
         std::cout << "暂无排片信息!" << std::endl;
@@ -234,12 +235,62 @@ void MovieView::displayScreenings(int movieId) {
         ViewHelper::showSeparator();
 
         for (const auto& screening : screenings) {
-            std::cout << std::left << std::setw(5) << screening->getScreeningId() << "|"
-                      << std::setw(20) << screening->getCinemaName() << "|"
-                      << std::setw(10) << screening->getHallName() << "|"
-                      << std::setw(20) << screening->getStartTime() << "|"
-                      << std::setw(10) << screening->getPrice() << "|"
-                      << std::setw(10) << screening->getLanguageVersion() << std::endl;
+            std::cout << std::left << std::setw(5) << screening->screeningId << "|"
+                      << std::setw(20) << screening->cinemaName << "|"
+                      << std::setw(10) << screening->hallName << "|"
+                      << std::setw(20) << screening->startTime << "|"
+                      << std::setw(10) << screening->price << "|"
+                      << std::setw(10) << screening->languageVersion << std::endl;
         }
     }
+}
+
+void MovieView::addMovie() {
+    ViewHelper::clearScreen();
+    ViewHelper::showMenuTitle("添加电影");
+
+    std::string title = ViewHelper::readString("电影名称: ");
+    if (title.empty()) {
+        ViewHelper::showError("电影名称不能为空!");
+        ViewHelper::waitForKeyPress();
+        return;
+    }
+
+    std::string director = ViewHelper::readString("导演: ");
+    std::string actors = ViewHelper::readString("主演: ");
+    std::string movieType = ViewHelper::readString("类型: ");
+    int duration = ViewHelper::readInt("时长(分钟): ");
+    std::string releaseDate = ViewHelper::readString("上映日期 (YYYY-MM-DD): ");
+    std::string language = ViewHelper::readString("语言: ");
+    std::string country = ViewHelper::readString("国家/地区: ");
+    std::string synopsis = ViewHelper::readString("剧情简介: ");
+    std::string poster = ViewHelper::readString("海报URL: ");
+    double rating = ViewHelper::readDouble("评分 (0-10): ");
+
+    std::cout << "\n电影状态:" << std::endl;
+    std::cout << "0 - 下架" << std::endl;
+    std::cout << "1 - 在映" << std::endl;
+    std::cout << "2 - 即将上映" << std::endl;
+    int status = ViewHelper::readInt("请选择状态: ", 1);
+
+    Movie movie;
+    movie.title = title;
+    movie.director = director;
+    movie.actors = actors;
+    movie.movieType = movieType;
+    movie.duration = duration;
+    movie.releaseDate = releaseDate;
+    movie.language = language;
+    movie.country = country;
+    movie.synopsis = synopsis;
+    movie.poster = poster;
+    movie.rating = rating;
+    movie.status =static_cast<Movie::Status>(status);
+
+    if (_movieService.addMovie(movie)) {
+        ViewHelper::showSuccess("电影添加成! ID: " + std::to_string(movie.movieId));
+    } else {
+        ViewHelper::showError("添加电影失败!");
+    }
+    ViewHelper::waitForKeyPress();
 }
