@@ -10,7 +10,7 @@ module;
 
 import entities;
 import viewhelper;
-import userservice;
+import orderservice;
 import authview;
 import movieservice;
 import screeningservice;
@@ -33,4 +33,4 @@ public:
     void showOrderDetail(const Order& order);
     void showOrderManagement();
     void orderStatistics();
-}
+};

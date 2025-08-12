@@ -125,3 +125,22 @@ target("movieview")
         "view/MovieView.cxx",
         "test/MovieView.cxx"
     )
+
+target("maincontroller")
+    set_kind("binary")
+    add_files(
+        "UserService.cxx",
+        "Database.cxx",
+        "Entities.cxx",
+        "MovieService.cxx",
+        "ScreeningService.cxx",
+        "Cinemaservice.cxx",
+        "OrderService.cxx",
+        "view/ViewHelper.cxx",
+        "view/AuthView.cxx",
+        "view/MovieView.cxx",
+        "view/OrderView.cxx",
+        "view/TicketView.cxx",
+        "view/MainController.cxx",
+        "test/MainController.cxx"
+    )

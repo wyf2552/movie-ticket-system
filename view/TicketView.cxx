@@ -10,7 +10,7 @@ module;
 
 import entities;
 import viewhelper;
-import userservice;
+import orderservice;
 import authview;
 import movieservice;
 import screeningservice;
@@ -23,6 +23,7 @@ private:
     MovieService& _movieService;
     ScreeningService& _screeningService;
     OrderService& _orderService;
+
     MovieUptr selectMovie();
     ScreeningUptr selectScreening(int movieId, const std::vector<ScreeningUptr>& screenings);
     std::vector<int> selectSeats(int screeningId);
@@ -34,4 +35,4 @@ public:
     TicketView(MovieService& movieService, ScreeningService& screeningService, OrderService& orderService);
 
     void buyTicket(const User& currentUser);
-}
+};
