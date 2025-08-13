@@ -160,3 +160,72 @@ void MainController::showUserMenu() {
         }
     }
 }
+
+void MainController::showAdminMenu() {
+    while (currentUser) {
+        ViewHelper::clearScreen();
+        ViewHelper::showMenuTitle("管理员 - " + currentUser->username);
+
+        std::cout << "1. 电影管理" << std::endl;
+        std::cout << "2. 影院管理" << std::endl;
+        std::cout << "3. 排片管理" << std::endl;
+        std::cout << "4. 订单管理" << std::endl;
+        std::cout << "5. 用户管理" << std::endl;
+        std::cout << "6. 统计报表" << std::endl;
+        std::cout << "7. 个人信息" << std::endl;
+        std::cout << "0. 退出登录" << std::endl;
+
+        int choice = ViewHelper::readInt("\n请选择功能: ");
+
+        switch (choice) {
+            case 1:
+                movieView.showMovieManagement();
+                break;
+            case 2:
+                cinemaView.showCinemaManagement();
+                break;
+            case 3:
+                screeningView.showScreeningManagement();
+                break;
+            case 4:
+                orderView.showOrderManagement();
+                break;
+            case 5:
+                userView.showUserManagement();
+                break;
+            case 6:
+                orderView.orderStatistics();
+                break;
+            case 7:
+                showPersonalInfo();
+                break;
+            case 0:
+                logout();
+                return;
+            default:
+                ViewHelper::showError("无效的选择!");
+                ViewHelper::waitForKeyPress();
+                break;
+        }
+    }
+}
+
+void MainController::logout() {
+    if (currentUser) {
+        delete currentUser;
+        currentUser = nullptr;
+    }
+}
+
+void MainController::exitSystem() {
+    ViewHelper::clearScreen();
+    ViewHelper::showMenuTitle("退出系统");
+
+    if (ViewHelper::confirm("确定退出系统吗?")) {
+        ViewHelper::clearScreen();
+        std::cout << "感谢使用电影票务管理系统，再见!" << std::endl;
+        exit(0);
+    }
+}
+
+
