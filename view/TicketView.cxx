@@ -125,3 +125,40 @@ MovieUptr TicketView::selectMovie() {
     }
     return nullptr;
 }
+
+ScreeningUptr TicketView::selectScreening(int movieId, const std::vector<ScreeningUptr>& screenings) {
+    ViewHelper::clearScreen();
+    ViewHelper::showMenuTitle("选择排片");
+
+    std::cout << std::left << std::setw(5) << "ID" << "|"
+              << std::setw(20) << "影院" << "|"
+              << std::setw(10) << "影厅" << "|"
+              << std::setw(20) << "放映时间" << "|"
+              << std::setw(10) << "票价" << "|"
+              << std::setw(10) << "语言版本" << std::endl;
+
+    ViewHelper::showSeparator();
+
+    for (const auto& screening : screenings) {
+        sdt::cout << std::left << std::setw(5) << screening->screeningId << "|"
+                  << std::setw(20) << screening->cinemaName << "|"
+                  << std::setw(10) << screening->hallName << "|"
+                  << std::setw(20) << screening->startTime << "|"
+                  << std::setw(10) << screening->price << "|"
+                  << std::setw(10) << screening->languageVersion << std::endl;
+    }
+
+    ViewHelper::showSeparator();
+
+    int screeningId = ViewHelper::readInt("请输入排片Id(0取消):");
+    if (screeningid <= 0) {
+        return nullptr;
+    }
+
+    for (const auto& screening : screenings) {
+        if (screening->screeningId == screeningId) {
+            return _screeningService.getScreeningById(screeningId);
+        }
+    }
+    return nullptr;
+}
