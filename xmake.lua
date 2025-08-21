@@ -120,11 +120,28 @@ target("movieview")
         "Entities.cxx",
         "MovieService.cxx",
         "ScreeningService.cxx",
-        "view/ViewHelper.cxx",
         "Cinemaservice.cxx",
+        "view/ViewHelper.cxx",
         "view/AuthView.cxx",
         "view/MovieView.cxx",
         "test/MovieView.cxx"
+    )
+
+target("ticketview")
+    set_kind("binary")
+    add_files(
+        "UserService.cxx",
+        "Database.cxx",
+        "Entities.cxx",
+        "MovieService.cxx",
+        "ScreeningService.cxx",
+        "Cinemaservice.cxx",
+        "OrderService.cxx",
+        "view/ViewHelper.cxx",
+        "view/AuthView.cxx",
+        "view/MovieView.cxx",
+        "view/TicketView.cxx",
+        "test/TicketView.cxx"
     )
 
 target("maincontroller")

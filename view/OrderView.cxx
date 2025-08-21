@@ -34,3 +34,7 @@ public:
     void showOrderManagement();
     void orderStatistics();
 };
+
+OrderView::OrderView(Orderservice& orderService) : _orderService(orderService) {}
+
+
