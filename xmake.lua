@@ -144,6 +144,24 @@ target("ticketview")
         "test/TicketView.cxx"
     )
 
+target("orderview")
+    set_kind("binary")
+    add_files(
+        "UserService.cxx",
+        "Database.cxx",
+        "Entities.cxx",
+        "MovieService.cxx",
+        "ScreeningService.cxx",
+        "Cinemaservice.cxx",
+        "OrderService.cxx",
+        "view/ViewHelper.cxx",
+        "view/AuthView.cxx",
+        "view/MovieView.cxx",
+        "view/TicketView.cxx",
+        "view/OrderView.cxx",
+        "test/OrderView.cxx"
+    )
+
 target("maincontroller")
     set_kind("binary")
     add_files(

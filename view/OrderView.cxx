@@ -8,15 +8,18 @@ module;
 #include <iostream>
 #include <iomanip>
 
+
+import database;
 import entities;
 import viewhelper;
+import userservice;
+import cinemaservice;
 import orderservice;
 import authview;
 import movieservice;
 import screeningservice;
 import movieview;
 import ticketview;
-
 
 export module orderview;
 
@@ -32,12 +35,12 @@ public:
     void showMyOrders(const User& currentUser);
     void showOrderDetail(const Order& order);
     void showOrderManagement();
-    void orderStatistics();
+    void orderStatustics();
 };
 
-OrderView::OrderView(Orderservice& orderService) : _orderService(orderService) {}
+OrderView::OrderView(OrderService& orderService) : _orderService(orderService) {}
 
-void OrderView:showMyOrders(const User& currentUser) {
+void OrderView::showMyOrders(const User& currentUser) {
     ViewHelper::clearScreen();
     ViewHelper::showMenuTitle("我的订单");
 
@@ -60,7 +63,7 @@ void OrderView:showMyOrders(const User& currentUser) {
         if (order->orderId == orderId) {
             showOrderDetail(*order);
 
-            if (order->orderStatus == Order::Status::Unpaid) {
+            if (order->status == Order::Status::unpaid) {
                 if (ViewHelper::confirm("是否现在支付?")) {
                     std::cout << "\n请选择支付方式:" << std::endl;
                     std::cout << "1. 支付宝" << std::endl;
@@ -117,8 +120,8 @@ void OrderView::showOrderDetail(const Order& order) {
         std::cout << "支付时间: " << order.payTime << std::endl;
     }
 
-    std::cout << "支付方式: " << order.getPayMethodDescription() << std::endl;
-    std::cout << "订单状态: " << order.getOrderStatusDescription() << std::endl;
+    std::cout << "支付方式: " << order.getPayMethodStr() << std::endl;
+    std::cout << "订单状态: " << order.getOrderStatusStr() << std::endl;
 
     ViewHelper::showSeparator();
 }
@@ -143,7 +146,7 @@ void OrderView::showOrderManagement() {
                 searchOrder();
                 break;
             case 3:
-                orderStatistics();
+                orderStatustics();
                 break;
             case 0:
                 return;
@@ -154,7 +157,6 @@ void OrderView::showOrderManagement() {
         }
     }
 }
-
 
 void OrderView::viewAllOrders() {
     ViewHelper::clearScreen();
@@ -184,5 +186,100 @@ void OrderView::viewAllOrders() {
     }
 
     ViewHelper::showError("未找到订单！");
+    ViewHelper::waitForKeyPress();
+}
+
+void OrderView::searchOrder() {
+    ViewHelper::clearScreen();
+    ViewHelper::showMenuTitle("搜索订单");
+
+    std::string orderId = ViewHelper::readString("请输入订单号:");
+    if (orderId.empty() || orderId == "0") {
+        ViewHelper::showError("订单号不能为空!");
+        ViewHelper::waitForKeyPress();
+        return;
+    }
+
+    int orderIdInt = 0;
+    try {
+        int orderIdInt = std::stoi(orderId);
+        if (orderIdInt <= 0) {
+            std::cout << "错误：订单ID必须为正整数" << std::endl;
+            return;
+        }
+    } catch (const std::exception& e) {
+        std::cout << "错误: 订单ID格式无效" << std::endl;
+        return;
+    }
+
+    auto order = _orderService.getOrderById(orderIdInt);
+
+    if (order) {
+        showOrderDetail(*order);
+    } else {
+        ViewHelper::showError("未找到订单!");
+    }
+
+    ViewHelper::waitForKeyPress();
+}
+
+void OrderView::displayOrderList(const std::vector<OrderUptr>& orders) {
+    std::cout << std::left << std::setw(8) << "订单ID" << "|"
+              << std::setw(15) << "订单号" << "|"
+              << std::setw(15) << "用户名" << "|"
+              << std::setw(20) << "电影" << "|"
+              << std::setw(20) << "影院" << "|"
+              << std::setw(20) << "时间" << "|"
+              << std::setw(10) << "金额" << "|"
+              << std::setw(10) << "状态" << std::endl;
+    ViewHelper::showSeparator();
+
+    for (const auto& order : orders) {
+        std::cout << std::left << std::setw(8) << order->orderNo << "|"
+                  << std::setw(15) << order->orderNo << "|"
+                  << std::setw(15) << order->username << "|"
+                  << std::setw(20) << order->movieTitle << "|"
+                  << std::setw(20) << order->cinemaName << "|"
+                  << std::setw(20) << order->startTime << "|"
+                  << std::setw(10) << order->totalAmount << "|"
+                  << std::setw(10) << order->getOrderStatusStr() << std::endl;
+    }
+    ViewHelper::showSeparator();
+}
+
+void OrderView::orderStatustics() {
+    ViewHelper::clearScreen();
+    ViewHelper::showMenuTitle("订单统计");
+
+    auto boxOffice = _orderService.getMovieBoxOffice();
+
+    if (boxOffice.empty()) {
+        ViewHelper::showInfo("暂无票房数据！");
+        ViewHelper::waitForKeyPress();
+        return;
+    }
+
+    std::cout << "电影票房统计:" << std::endl;
+    ViewHelper::showSeparator();
+
+    std::cout << std::left << std::setw(30) << "电影" << "|"
+              << std::setw(15) << "票房(元)" << "|"
+              << std::setw(10) << "票数" << std::endl;
+    ViewHelper::showSeparator();
+
+    double totalBoxOffice = 0.0;
+    int totalTickets = 0;
+
+    for (const auto& item : boxOffice) {
+        std::cout << std::left << std::setw(30) << item.first << "|"
+                  << std::setw(15) << item.second << "|"
+                  << std::setw(10) << "N/A" << std::endl;
+        totalBoxOffice += item.second;
+    }
+
+    ViewHelper::showSeparator();
+    std::cout << "总票房: " << totalBoxOffice << " 元" << std::endl;
+    std::cout << "总票数: " << totalTickets << " 张" << std::endl;
+
     ViewHelper::waitForKeyPress();
 }

@@ -71,7 +71,7 @@ bool UserService::registerUser(User& user) {
         pstmt->setString(4, user.gender);
         pstmt->setString(5, user.phone);
         pstmt->setString(6, user.email);
-        pstmt->setInt(7, user.userType);
+        pstmt->setInt(7, statusCast<User::Type, int>(user.type));
 
         pstmt->executeUpdate();
 
@@ -106,8 +106,8 @@ UserUptr UserService::login(const std::string& username, const std::string& pass
             user->email = rs->getString("email");
             user->regTime = rs->getString("reg_time");
             user->lastLogin = rs->getString("last_login");
-            user->userStatus = rs->getInt("user_status");
-            user->userType = rs->getInt("user_type");
+            user->status = statusCast<int, User::Status>(rs->getInt("user_status"));
+            user->type = statusCast<int, User::Type>(rs->getInt("user_type"));
 
             pstmt = _db.prepareStatement("update User set last_login = NOW() where user_id = ?");
             if (pstmt) {
@@ -144,8 +144,8 @@ UserUptr UserService::getUserById(int userId) {
             user->email = rs->getString("email");
             user->regTime = rs->getString("reg_time");
             user->lastLogin = rs->getString("last_login");
-            user->userStatus = rs->getInt("user_status");
-            user->userType = rs->getInt("user_type");
+            user->status = statusCast<int, User::Status>(rs->getInt("user_status"));
+            user->type = statusCast<int, User::Type>(rs->getInt("user_type"));
             return user;
         }
         return nullptr;
@@ -172,8 +172,8 @@ std::vector<UserUptr> UserService::getAllUsers() {
                 user->email = rs->getString("email");
                 user->regTime = rs->getString("reg_time");
                 user->lastLogin = rs->getString("last_login");
-                user->userStatus = rs->getInt("user_status");
-                user->userType = rs->getInt("user_type");
+                user->status = statusCast<int, User::Status>(rs->getInt("user_status"));
+                user->type = statusCast<int, User::Type>(rs->getInt("user_type"));
                 users.push_back(std::move(user));
             }
         }
@@ -196,8 +196,8 @@ bool UserService::updateUser(const User& user) {
         pstmt->setString(2, user.gender);
         pstmt->setString(3, user.phone);
         pstmt->setString(4, user.email);
-        pstmt->setInt(5, user.userStatus);
-        pstmt->setInt(6, user.userType);
+        pstmt->setInt(5, statusCast<User::Status, int>(user.status));
+        pstmt->setInt(6, statusCast<User::Type, int>(user.type));
         pstmt->setInt(7, user.userId);
 
         return pstmt->executeUpdate() > 0;

@@ -87,7 +87,14 @@ bool AuthView::showRegisterMenu() {
     std::string phone = ViewHelper::readString("手机号: ");
     std::string email = ViewHelper::readString("邮箱: ");
 
-    User user(0, username, password, realName, gender, phone, email);
+    User user;
+    user.username = username;
+    user.password = password;
+    user.realName = realName;
+    user.gender = gender;
+    user.phone = phone;
+    user.email = email;
+    user.type = User::Type::regular;
 
     if (_userService->registerUser(user)) {
         ViewHelper::showSuccess("注册成功! 请登录系统.");

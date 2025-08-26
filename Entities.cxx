@@ -11,7 +11,7 @@ export module entities;
 
 export class User {
 public:
-    int userId;
+    int userId = 0;
     std::string username;
     std::string password;
     std::string realName;
@@ -20,18 +20,27 @@ public:
     std::string email;
     std::string regTime;
     std::string lastLogin;
-    int userStatus;
-    int userType;
 
-    User() : userId(0), userStatus(1), userType(0) {}
+    enum class Type {
+        regular,
+        admin
+    } type;
+
+    enum class Status {
+        active,
+        inactive,
+        banned
+    } status = Status::inactive;
+
+    User() = default;
 
     User(int userId, const std::string& username, const std::string& password,
          const std::string& realName, const std::string& gender,
          const std::string& phone, const std::string& email,
-         int userType = 0)
+         User::Type userType)
         : userId(userId), username(username), password(password),
           realName(realName), gender(gender), phone(phone),
-          email(email), userStatus(1), userType(userType) {
+          email(email), type(userType) {
 
         // 设置注册时间为当前时间
         time_t now = time(0);
@@ -48,7 +57,9 @@ public:
     }
 
     // 判断是否为管理员
-    bool isAdmin() const { return userType == 1; }
+    bool isAdmin() const {
+        return type == Type::admin;
+    }
 };
 
 export using UserUptr = std::unique_ptr<User>;
@@ -315,7 +326,7 @@ public:
         bank
     } payMethod;
     enum class Status {
-        nopaid,
+        unpaid,
         paid,
         cancle,
         complete
@@ -348,7 +359,7 @@ public:
 
     std::string getOrderStatusStr() const {
         switch (status) {
-            case Status::nopaid: return "待支付";
+            case Status::unpaid: return "待支付";
             case Status::paid: return "已支付";
             case Status::cancle: return "已取消";
             case Status::complete: return "已完成";

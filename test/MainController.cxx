@@ -2,17 +2,17 @@
 #include <memory>
 
 import userservice;
-import authview;
 import database;
+import entities;
+import movieservice;
 import screeningservice;
 import cinemaservice;
 import orderservice;
-import movieservice;
-import entities;
+import viewhelper;
+import authview;
 import movieview;
 import orderview;
 import ticketview;
-import viewhelper;
 import maincontroller;
 
 int main() {
@@ -50,9 +50,9 @@ int main() {
         Screening screening(1, 1, 1, 1, "2024-12-12", "2025-01-12", 34.52, "简体中文", Screening::Status::normal);
         ScreeningSeat screeningseat(1, 1, 1, ScreeningSeat::Status::sold, "2024-12-12", 1);
 
-        MainController maincontroller();
+        MainController maincontroller;
         maincontroller.~MainController();
-        maincontroller.initializa();
+        maincontroller.initialize();
         maincontroller.run();
     }
 }
