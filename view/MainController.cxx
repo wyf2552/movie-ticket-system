@@ -75,7 +75,7 @@ bool MainController::initialize() {
     if (!_db.connect()) {
         return false;
     }
-    _db.setSchema("moviesystem"); // 设置数据库schema
+    _db.setSchema("moviesystem");
     return true;
 }
 
@@ -310,7 +310,6 @@ void MainController::showScreeningManagement() {
             case 1: {
                 ViewHelper::clearScreen();
                 ViewHelper::showMenuTitle("所有排片");
-                // 这里可以实现查看所有排片的功能
                 ViewHelper::showInfo("查看排片功能待实现!");
                 ViewHelper::waitForKeyPress();
                 break;
@@ -318,7 +317,6 @@ void MainController::showScreeningManagement() {
             case 2: {
                 ViewHelper::clearScreen();
                 ViewHelper::showMenuTitle("添加排片");
-                // 这里可以实现添加排片的功能
                 ViewHelper::showInfo("添加排片功能待实现!");
                 ViewHelper::waitForKeyPress();
                 break;
@@ -387,7 +385,7 @@ void MainController::showPersonalInfo() {
 }
 
 void MainController::logout() {
-    currentUser.reset();  // 使用智能指针的reset方法
+    currentUser.reset();
 }
 
 void MainController::exitSystem() {
@@ -400,3 +398,4 @@ void MainController::exitSystem() {
         exit(0);
     }
 }
+
