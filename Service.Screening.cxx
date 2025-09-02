@@ -17,11 +17,11 @@ module;
 
 import database;
 import entities;
-import userservice;
-import movieservice;
-import cinemaservice;
+import service.user;
+import service.movie;
+import service.cinema;
 
-export module screeningservice;
+export module service.screening;
 
 export class ScreeningService {
 private:

@@ -1,14 +1,10 @@
-#include <iostream>
-#include <memory>
-
-import userservice;
-import authview;
+import service.movie;
 import database;
-import screeningservice;
-import movieservice;
 import entities;
-import movieview;
-import viewhelper;
+import service.user;
+
+#include <iostream>
+#include <cppconn/resultset.h>
 
 int main() {
     Database db("tcp://localhost:3306", "root", "123456wyf", "");
@@ -29,19 +25,14 @@ int main() {
                  Movie::Status::onShow);
         Movie movie1(2, "灵笼", "马克", "白冰", "末世", 132, "2025-5-23", "中文", "中国", "等等等", "inception_poster.jpg", 9.0, Movie::Status::onShow);
 
-        auto movieservice = std::make_shared<MovieService>(db);
-        auto screeningservice = std::make_shared<ScreeningService>(db);
-
-        MovieView movieview (*movieservice, *screeningservice);
-
-        movieview.browseMovies();
-        movieview.showMovieDetails();
-        movieview.searchMovies();
-        movieview.showMovieManagement();
-        // movieview.displayMovieList(movie);
-        // movieview.displayMovieDetail(movie1);
-        // movieview.displayScreenings(1);
-        // movieview.addMovie();
-
+        MovieService movieservice(db);
+        movieservice.addMovie(movie);
+        movieservice.getMovieById(1);
+        movieservice.getAllMovies();
+        movieservice.getNowPlayingMovies();
+        movieservice.getComingSoonMovies();
+        movieservice.updateMovie(movie1);
+        movieservice.deleteMovie(1);
+        movieservice.searchMovies("马克");
     }
 }

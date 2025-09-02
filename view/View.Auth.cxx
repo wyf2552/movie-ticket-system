@@ -7,10 +7,10 @@ module;
 #include <iostream>
 
 import entities;
-import viewhelper;
-import userservice;
+import view.helper;
+import service.user;
 
-export module authview;
+export module view.auth;
 
 export class AuthView {
 private:

@@ -14,10 +14,10 @@ module;
 
 import database;
 import entities;
-import userservice;
-import movieservice;
+import service.user;
+import service.movie;
 
-export module cinemaservice;
+export module service.cinema;
 
 export class CinemaService {
 private:

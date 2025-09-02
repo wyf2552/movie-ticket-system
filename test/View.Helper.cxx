@@ -1,7 +1,7 @@
 #include <iostream>
 #include <memory>
 
-import viewhelper;
+import view.helper;
 
 int main() {
     ViewHelper viewhelper;

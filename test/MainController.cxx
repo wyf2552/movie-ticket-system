@@ -1,18 +1,18 @@
 #include <iostream>
 #include <memory>
 
-import userservice;
+import service.user;
 import database;
 import entities;
-import movieservice;
-import screeningservice;
-import cinemaservice;
-import orderservice;
-import viewhelper;
-import authview;
-import movieview;
-import orderview;
-import ticketview;
+import service.movie;
+import service.screening;
+import service.cinema;
+import service.order;
+import view.helper;
+import view.auth;
+import view.movie;
+import view.order;
+import view.ticket;
 import maincontroller;
 
 // int main() {

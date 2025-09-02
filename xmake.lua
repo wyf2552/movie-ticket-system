@@ -35,148 +35,148 @@ target("database")
     )
 
 -- Target: UserService
-target("userservice")
+target("service.user")
     set_kind("binary")
     add_files(
         "Database.cxx",
         "Entities.cxx",
-        "UserService.cxx",
-        "test/UserService.cxx"
+        "Service.User.cxx",
+        "test/Service.User.cxx"
     )
 
 -- Target: MovieService
-target("movieservice")
+target("service.movie")
     set_kind("binary")
     add_files(
         "Database.cxx",
         "Entities.cxx",
-        "UserService.cxx",
-        "MovieService.cxx",
-        "test/MovieService.cxx"
+        "Service.User.cxx",
+        "Service.Movie.cxx",
+        "test/Service.Movie.cxx"
     )
 
 -- Target: CinemaService
-target("cinemaservice")
+target("service.cinema")
     set_kind("binary")
     add_files(
         "Database.cxx",
         "Entities.cxx",
-        "UserService.cxx",
-        "MovieService.cxx",
-        "CinemaService.cxx",
-        "test/CinemaService.cxx"
+        "Service.User.cxx",
+        "Service.Movie.cxx",
+        "Service.Cinema.cxx",
+        "test/Service.Cinema.cxx"
     )
 
 -- Target: ScreeningService
-target("screeningservice")
+target("service.screening")
     set_kind("binary")
     add_files(
         "Database.cxx",
         "Entities.cxx",
-        "UserService.cxx",
-        "MovieService.cxx",
-        "CinemaService.cxx",
-        "ScreeningService.cxx",
-        "test/ScreeningService.cxx"
+        "Service.User.cxx",
+        "Service.Movie.cxx",
+        "Service.Cinema.cxx",
+        "Service.Screening.cxx",
+        "test/Service.Screening.cxx"
     )
 
--- Target: ScreeningService
-target("orderservice")
+-- Target: OrderService
+target("service.order")
     set_kind("binary")
     add_files(
         "Database.cxx",
         "Entities.cxx",
-        "UserService.cxx",
-        "MovieService.cxx",
-        "CinemaService.cxx",
-        "ScreeningService.cxx",
-        "OrderService.cxx",
-        "test/OrderService.cxx"
+        "Service.User.cxx",
+        "Service.Movie.cxx",
+        "Service.Cinema.cxx",
+        "Service.Screening.cxx",
+        "Service.Order.cxx",
+        "test/Service.Order.cxx"
     )
 
-target("viewhelper")
+target("view.helper")
     set_kind("binary")
     add_files(
-        "view/ViewHelper.cxx",
-        "test/ViewHelper.cxx"
+        "view/View.Helper.cxx",
+        "test/View.Helper.cxx"
     )
 
-target("authview")
+target("view.auth")
     set_kind("binary")
     add_files(
-        "UserService.cxx",
+        "Service.User.cxx",
         "Database.cxx",
         "Entities.cxx",
-        "view/ViewHelper.cxx",
-        "view/AuthView.cxx",
-        "test/AuthView.cxx"
+        "view/View.Helper.cxx",
+        "view/View.Auth.cxx",
+        "test/View.Auth.cxx"
     )
 
-target("movieview")
+target("view.movie")
     set_kind("binary")
     add_files(
-        "UserService.cxx",
+        "Service.User.cxx",
         "Database.cxx",
         "Entities.cxx",
-        "MovieService.cxx",
-        "ScreeningService.cxx",
-        "Cinemaservice.cxx",
-        "view/ViewHelper.cxx",
-        "view/AuthView.cxx",
-        "view/MovieView.cxx",
-        "test/MovieView.cxx"
+        "Service.Movie.cxx",
+        "Service.Screening.cxx",
+        "Service.Cinema.cxx",
+        "view/View.Helper.cxx",
+        "view/View.Auth.cxx",
+        "view/View.Movie.cxx",
+        "test/View.Movie.cxx"
     )
 
-target("ticketview")
+target("view.ticket")
     set_kind("binary")
     add_files(
-        "UserService.cxx",
+        "Service.User.cxx",
         "Database.cxx",
         "Entities.cxx",
-        "MovieService.cxx",
-        "ScreeningService.cxx",
-        "Cinemaservice.cxx",
-        "OrderService.cxx",
-        "view/ViewHelper.cxx",
-        "view/AuthView.cxx",
-        "view/MovieView.cxx",
-        "view/TicketView.cxx",
-        "test/TicketView.cxx"
+        "Service.Movie.cxx",
+        "Service.Screening.cxx",
+        "Service.Cinema.cxx",
+        "Service.Order.cxx",
+        "view/View.Helper.cxx",
+        "view/View.Auth.cxx",
+        "view/View.Movie.cxx",
+        "view/View.Ticket.cxx",
+        "test/View.Ticket.cxx"
     )
 
-target("orderview")
+target("view.order")
     set_kind("binary")
     add_files(
-        "UserService.cxx",
+        "Service.User.cxx",
         "Database.cxx",
         "Entities.cxx",
-        "MovieService.cxx",
-        "ScreeningService.cxx",
-        "Cinemaservice.cxx",
-        "OrderService.cxx",
-        "view/ViewHelper.cxx",
-        "view/AuthView.cxx",
-        "view/MovieView.cxx",
-        "view/TicketView.cxx",
-        "view/OrderView.cxx",
-        "test/OrderView.cxx"
+        "Service.Movie.cxx",
+        "Service.Screening.cxx",
+        "Service.Cinema.cxx",
+        "Service.Order.cxx",
+        "view/View.Helper.cxx",
+        "view/View.Auth.cxx",
+        "view/View.Movie.cxx",
+        "view/View.Ticket.cxx",
+        "view/View.Order.cxx",
+        "test/View.Order.cxx"
     )
 
 target("maincontroller")
     set_kind("binary")
     add_files(
-        "UserService.cxx",
+        "Service.User.cxx",
         "Database.cxx",
         "Entities.cxx",
-        "MovieService.cxx",
-        "ScreeningService.cxx",
-        "Cinemaservice.cxx",
-        "OrderService.cxx",
-        "view/ViewHelper.cxx",
-        "view/AuthView.cxx",
-        "view/MovieView.cxx",
-        "view/OrderView.cxx",
-        "view/TicketView.cxx",
+        "Service.Movie.cxx",
+        "Service.Screening.cxx",
+        "Service.Cinema.cxx",
+        "Service.Order.cxx",
+        "view/View.Helper.cxx",
+        "view/View.Auth.cxx",
+        "view/View.Movie.cxx",
+        "view/View.Order.cxx",
+        "view/View.Ticket.cxx",
         "view/MainController.cxx",
         "test/MainController.cxx"
     )

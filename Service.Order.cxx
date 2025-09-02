@@ -15,12 +15,12 @@ module;
 
 import database;
 import entities;
-import userservice;
-import movieservice;
-import cinemaservice;
-import screeningservice;
+import service.user;
+import service.movie;
+import service.cinema;
+import service.screening;
 
-export module orderservice;
+export module service.order;
 
 export class OrderService {
 private:

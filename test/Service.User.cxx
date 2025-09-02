@@ -1,4 +1,4 @@
-import userservice;
+import service.user;
 import database;
 import entities;
 

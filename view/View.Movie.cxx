@@ -8,13 +8,13 @@ module;
 #include <iomanip>
 
 import entities;
-import viewhelper;
-import userservice;
-import authview;
-import movieservice;
-import screeningservice;
+import view.helper;
+import service.user;
+import view.auth;
+import service.movie;
+import service.screening;
 
-export module movieview;
+export module view.movie;
 
 export class MovieView {
 private:

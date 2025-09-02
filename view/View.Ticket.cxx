@@ -10,16 +10,16 @@ module;
 #include <map>
 
 import entities;
-import userservice;
+import service.user;
 import database;
-import viewhelper;
-import orderservice;
-import authview;
-import movieservice;
-import screeningservice;
-import movieview;
+import view.helper;
+import service.order;
+import view.auth;
+import service.movie;
+import service.screening;
+import view.movie;
 
-export module ticketview;
+export module view.ticket;
 
 export class TicketView {
 private:

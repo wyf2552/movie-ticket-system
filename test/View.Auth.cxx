@@ -1,8 +1,8 @@
 #include <iostream>
 #include <memory>
 
-import userservice;
-import authview;
+import service.user;
+import view.auth;
 import database;
 int main() {
     Database db("tcp://localhost:3306", "root", "123456wyf", "");

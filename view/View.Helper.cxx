@@ -3,7 +3,7 @@ module;
 #include <string>
 #include <iostream>
 
-export module viewhelper;
+export module view.helper;
 
 export class ViewHelper {
 public:

@@ -14,9 +14,9 @@ module;
 
 import database;
 import entities;
-import userservice;
+import service.user;
 
-export module movieservice;
+export module service.movie;
 
 export class MovieService {
 private:

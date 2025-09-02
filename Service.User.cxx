@@ -12,7 +12,7 @@ module;
 #include <cppconn/statement.h>
 #include <cppconn/prepared_statement.h>
 
-export module userservice;
+export module service.user;
 import database;
 import entities;
 

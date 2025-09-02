@@ -11,17 +11,17 @@ module;
 
 import database;
 import entities;
-import viewhelper;
-import userservice;
-import cinemaservice;
-import orderservice;
-import authview;
-import movieservice;
-import screeningservice;
-import movieview;
-import ticketview;
+import view.helper;
+import service.user;
+import service.cinema;
+import service.order;
+import view.auth;
+import service.movie;
+import service.screening;
+import view.movie;
+import view.ticket;
 
-export module orderview;
+export module view.order;
 
 export class OrderView {
 private:
